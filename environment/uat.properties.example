@@ -1,0 +1,4 @@
+# Environment properties — copy to environment/uat.properties
+# Alias uat1 maps to uat01 via settings ENV_ALIASES
+
+API_BASE_URL=https://api-uat.example.com

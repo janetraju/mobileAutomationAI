@@ -1,0 +1,40 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+environment/*.properties
+!environment/*.properties.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# Test artifacts
+target/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.log
+
+# Mobile binaries
+*.apk
+*.ipa
+*.aab
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Allure
+allure-report/

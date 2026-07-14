@@ -1,0 +1,4 @@
+# Environment properties — copy to environment/dev.properties
+# Loaded after .env and .env.dev
+
+API_BASE_URL=https://api-dev.example.com

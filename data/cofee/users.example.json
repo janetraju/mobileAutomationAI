@@ -1,0 +1,7 @@
+{
+  "test_user": {
+    "mobile": "SET_VIA_TEST_MOBILE_ENV",
+    "country_code": "+91",
+    "description": "Copy to users.json locally — never commit real numbers with secrets"
+  }
+}

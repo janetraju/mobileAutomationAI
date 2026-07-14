@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mobile-automation-framework"
+version = "0.1.0"
+description = "App-agnostic mobile UI test automation framework (Pytest + Appium + Allure)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Appium-Python-Client==4.5.1",
+    "allure-pytest==2.13.5",
+    "black==24.10.0",
+    "httpx==0.28.1",
+    "invoke==2.2.0",
+    "pre-commit==4.0.1",
+    "psycopg[binary]==3.2.3",
+    "pydantic-settings==2.6.1",
+    "pytest==8.3.4",
+    "pytest-xdist==3.6.1",
+    "pytest-xdist-worker-stats==0.3.0",
+    "python-dotenv==1.0.1",
+    "ruff==0.8.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "dataprovider"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/conftest.py" = ["E402"]
