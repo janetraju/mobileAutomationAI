@@ -5,6 +5,7 @@ description: >-
   Use when the user provides a new app binary, wants to configure APP_SLUG,
   update settings registry, rename scaffold folders, wire .env, or prepare
   the repo before locator discovery and test authoring.
+disable-model-invocation: true
 ---
 
 # Onboard Mobile App

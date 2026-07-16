@@ -102,9 +102,10 @@ Prefix convention: `btn_`, `txt_`, `input_`, `chk_`, `ddl_`, `lnk_`, `msg_`, `ic
 | Skill | When to use |
 |-------|-------------|
 | `onboard-mobile-app` | New APK/IPA → config, registry, folder rename |
+| `get-context` | Mandatory intake (PRD/Figma/Jira/app source) first, then discovery → `docs/context/<app_slug>-<feature>-context.md` |
 | `author-mobile-flow-docs` | Screenshots/walkthrough → `docs/<app_slug>-flow.md` |
 | `discover-mobile-locators` | Install app + UI dump before writing POs |
-| `extract-p0-test-cases` | P0 smoke cases from flow docs |
+| `extract-p0-test-cases` | Full test cases (P0/P1/P2, all categories) from context file or flow docs → `docs/context/<app_slug>-<feature>-testcases.md`, approval gated |
 | `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` |
 | `mobile-appium-python` | Author POs, actions, steps, tests |
 

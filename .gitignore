@@ -30,6 +30,9 @@ htmlcov/
 *.ipa
 *.aab
 
+# App source dropped in for gather-mobile-context (app team's code, not ours)
+reference/
+
 # IDE
 .idea/
 .vscode/
@@ -38,3 +41,6 @@ htmlcov/
 
 # Allure
 allure-report/
+
+# Claude Code runtime state (not project code — .claude/skills/ symlinks ARE tracked)
+.claude/scheduled_tasks.lock

@@ -4,6 +4,7 @@ description: >-
   Set up mobile test data via API, OTP helpers, and encrypted fixtures.
   Use when tests need login credentials, OTP injection, backend seeding,
   org/account setup, or API assertions before or during UI flows.
+disable-model-invocation: true
 ---
 
 # Setup Mobile Test Data

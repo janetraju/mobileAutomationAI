@@ -4,6 +4,7 @@ description: >-
   Document mobile app user flows from screenshots, walkthroughs, or Figma into
   docs/<app_slug>-flow.md. Use before extract-p0-test-cases or
   discover-mobile-locators when adding a new feature.
+disable-model-invocation: true
 ---
 
 # Author Mobile Flow Docs

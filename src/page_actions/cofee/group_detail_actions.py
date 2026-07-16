@@ -55,10 +55,25 @@ class GroupDetailActions(PageActions):
     def is_overview_visible(self, timeout: float | None = None) -> bool:
         try:
             self.wait_for_element_visible(self._detail_po.loc_overview(), timeout=timeout)
-            self.wait_for_element_visible(
-                self._detail_po.loc_amount_collected(), timeout=timeout
-            )
+            self.wait_for_element_visible(self._detail_po.loc_amount_collected(), timeout=timeout)
             self.wait_for_element_visible(self._detail_po.loc_amount_due(), timeout=timeout)
             return True
         except TimeoutException:
             return False
+
+    def tap_member_row(self, member_name: str) -> None:
+        """Open a member's payment history from group detail."""
+        row = self.wait_for_element_visible(
+            self._detail_po.loc_member_card(member_name), timeout=10
+        )
+        self.tap(row)
+
+    def tap_quick_collect(self) -> None:
+        """Open the Quick Collect flow from group detail."""
+        button = self.wait_for_element_visible(self._detail_po.loc_quick_collect(), timeout=10)
+        self.tap(button)
+
+    def tap_monthly_insights(self) -> None:
+        """Open the Monthly Insights bottom sheet from group detail."""
+        button = self.wait_for_element_visible(self._detail_po.loc_monthly_insights(), timeout=10)
+        self.tap(button)
