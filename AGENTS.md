@@ -102,15 +102,34 @@ Prefix convention: `btn_`, `txt_`, `input_`, `chk_`, `ddl_`, `lnk_`, `msg_`, `ic
 | Skill | When to use |
 |-------|-------------|
 | `onboard-mobile-app` | New APK/IPA → config, registry, folder rename |
-| `author-mobile-flow-docs` | Screenshots/walkthrough → `docs/<app_slug>-flow.md` |
-| `discover-mobile-locators` | Install app + UI dump before writing POs |
-| `extract-p0-test-cases` | P0 smoke cases from flow docs |
+| `author-mobile-flow-docs` | Screenshots/walkthrough **or product/source repo** → `docs/<app_slug>-flow.md` |
+| `discover-mobile-locators` | Install app + UI dump before writing POs (required for mobile) |
+| `extract-p0-test-cases` | P0 smoke cases from flow docs (fed by screenshots and/or repo analysis) |
 | `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` |
 | `mobile-appium-python` | Author POs, actions, steps, tests |
 
+## Feature context (screenshots **or** product repo)
+
+Feature context may come from:
+
+- Screenshots / walkthrough / Figma, **or**
+- A **product/source repo** (Flutter/RN/native screens, routes, widgets, labels, validation)
+
+Treat that input as the **flow spec** (happy path, fields, success criteria).  
+**Always** confirm locators on a running app (`invoke ui:dump` / emulator) before treating page objects as final — repo code alone is not enough for mobile UI automation.
+
+```
+context (screenshots | product repo)
+  → author-mobile-flow-docs
+  → extract-p0-test-cases
+  → discover-mobile-locators   # live device dump
+  → setup-mobile-test-data
+  → mobile-appium-python
+```
+
 ## Product flows
 
-Read **`docs/cofee-flow.md`** before writing tests. Do not invent flows or selectors not documented or inspected.
+Read **`docs/cofee-flow.md`** before writing tests. Do not invent flows or selectors not documented **or** inspected on device.
 
 ## Adding a feature (order)
 

@@ -38,23 +38,40 @@
 - Member row shows name and **Fee amount** matching entered amount
 - Overview cards visible (Amount Collected / Amount Due)
 
-| ID | Flow | Priority | Automation status | Notes |
-|----|------|----------|-------------------|-------|
-| P0-03 | Create group with manual member | P0 | **Done** | `tests/test/cofee/groups/test_create_group.py` |
-| P1-01 | Create group from contacts | P1 | Not started | Requires contacts permission |
-| P1-02 | Create group with installments toggle | P1 | Not started | |
+## Create group — weekly fee collection (from product repo)
+
+**Source:** `builds/cofee-app-develop` — `WeeklyFrequencySelector`, `group_settings.dart` frequencySelectors  
+**Precondition:** Same as above (logged-in Individual).
+
+| Step | Screen | Action |
+|------|--------|--------|
+| 1–6 | Same as P0-03 | Through opening schedule modal |
+| 7 | Schedule payment | Open **Frequency** dropdown (default Monthly) → **Weekly** |
+| 8 | Schedule payment | Tap weekday chip **Mon** → **Apply** |
+| 9 | Create group | Field shows **`Weekly: Monday`** → **Save** |
+| 10–11 | Promo → Group detail | Same success criteria as P0-03 |
+
+| ID | Flow | Priority | Automation status | Context | Notes |
+|----|------|----------|-------------------|---------|-------|
+| P0-03 | Create group with manual member (monthly last day) | P0 | **Done** | screenshots | `test_create_group_with_manual_member` |
+| P0-04 | Create group with weekly Monday fee | P0 | **Done** | product repo | `test_create_group_with_weekly_fee_collection` |
+| P1-01 | Create group from contacts | P1 | Not started | product repo | Requires contacts permission |
+| P1-02 | Create group with installments toggle | P1 | Not started | product repo | Amount ≥ org `splitRequiredAmountMin` |
+| P1-03 | Create group with two manual members | P1 | Not started | product repo | Members `+` on create form |
 
 ## Screen map
 
-| Screen | Entry | Page object | Locator dump |
-|--------|-------|-------------|--------------|
-| Home | After login | `home_po.py` | `docs/locators/home_logged_in.xml` |
-| Select members | Add New | `create_group_po.py` | `docs/locators/select_members.xml` |
-| Add member | Manually | `create_group_po.py` | `docs/locators/add_member.xml` |
-| Create group | After Add member | `create_group_po.py` | `docs/locators/create_group.xml` |
-| Schedule payment | Fee Collection Day | `create_group_po.py` | `docs/locators/schedule_payment.xml` |
-| Promo share | After Save | `create_group_po.py` | `docs/locators/share_promo.xml` |
-| Group detail | After I'll share later | `group_detail_po.py` | `docs/locators/group_detail.xml` |
+| Screen | Entry | Page object | Locator discovery |
+|--------|-------|-------------|-------------------|
+| Home | After login | `home_po.py` | `invoke ui:dump --screen=home_logged_in` |
+| Select members | Add New | `create_group_po.py` | `invoke ui:dump --screen=select_members` |
+| Add member | Manually | `create_group_po.py` | `invoke ui:dump --screen=add_member` |
+| Create group | After Add member | `create_group_po.py` | `invoke ui:dump --screen=create_group` |
+| Schedule payment | Fee Collection Day | `create_group_po.py` | `invoke ui:dump --screen=schedule_payment` |
+| Promo share | After Save | `create_group_po.py` | `invoke ui:dump --screen=share_promo` |
+| Group detail | After I'll share later | `group_detail_po.py` | `invoke ui:dump --screen=group_detail` |
+
+UI dump XMLs are local/temporary — do not commit them. Locators live in page objects.
 
 ## Known blockers
 

@@ -13,7 +13,20 @@ description: >-
 
 1. Read **`AGENTS.md`** (repo root).
 2. Confirm **`PLATFORM`** and **`APP_SLUG`** from `.env` / `src/core/settings.py`.
-3. Inspect the real UI (Appium Inspector, `adb shell uiautomator dump`, iOS Accessibility Inspector) before writing locators — never guess selectors.
+3. Read **`docs/<app_slug>-flow.md`** (flows from screenshots and/or product repo).
+4. Inspect the **real UI** (Appium Inspector, `invoke ui:dump`, iOS Accessibility Inspector) before writing locators — never guess selectors from product source alone.
+
+## Authoring from a product/source repo
+
+When the feature spec came from an app codebase:
+
+1. Ensure flow doc exists (`author-mobile-flow-docs`) and P0s are agreed (`extract-p0-test-cases`)
+2. Navigate the build on emulator/device → **`discover-mobile-locators`**
+3. Draft POs from the dump (optionally cross-check labels/keys seen in product code)
+4. Implement actions → steps → dataprovider → test
+5. Run on device; heal flaky CTAs with evidence (screenshot / page source)
+
+Repo informs **what** to automate; the device dump locks **how** to find elements.
 
 ## When working on CoFee
 
