@@ -25,10 +25,16 @@ htmlcov/
 .coverage
 *.log
 
-# Mobile binaries
+# Mobile binaries and UI dumps (local only)
 *.apk
 *.ipa
 *.aab
+docs/locators/*.xml
+!docs/locators/.gitkeep
+!docs/locators/README.md
+
+# Product source used as local flow context (do not push into automation repo)
+builds/cofee-app-develop/
 
 # App source dropped in for gather-mobile-context (app team's code, not ours)
 reference/

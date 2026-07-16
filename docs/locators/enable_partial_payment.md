@@ -1,12 +1,10 @@
 # Locator sheet: Enable Partial Payment (`cofee-enable-partial-payment`)
 
 Live-confirmed on `Pixel_7` emulator (Android), CoFee dev build (`cofee.life.app.dev`, versionCode 109).
-Raw dumps: `group_payments_list.xml`, `group_payments_kebab_menu.xml`,
-`enable_partial_payment_confirm_dialog.xml`,
-`group_payments_kebab_menu_after_enable.xml`, `mark_as_paid_full_amount.xml`,
-`mark_as_paid_partial_amount.xml`, `group_payments_monthly_insights_sheet.xml`,
-`group_payments_true_screen.xml`, `all_payments_global_screen.xml`,
-`all_payments_kebab_menu.xml` (this directory).
+Raw UI dump XMLs captured during discovery are local-only (`docs/locators/*.xml`
+is gitignored per repo policy — see `docs/cofee-flow.md`'s Screen map note);
+re-dump with `invoke ui:dump --screen=<name>` if you need to re-verify. This
+file is the committed, durable record of what those dumps showed.
 
 ## Three distinct payment-list screens — don't conflate them
 

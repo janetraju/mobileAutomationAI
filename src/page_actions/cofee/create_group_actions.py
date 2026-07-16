@@ -125,12 +125,8 @@ class CreateGroupActions(PageActions):
         )
         self.tap(field)
 
-    def select_last_day_of_month_and_apply(self) -> None:
-        """Pick last day of month and close schedule modal until it is truly gone."""
-        self.wait_for_element_visible(self._group_po.loc_schedule_payment_title(), timeout=10)
-        last_day = self._group_po.find_last_day_of_month()
-        self._adb_tap_element(last_day, x_ratio=0.08)
-        # Apply is often blocked on the right; Cancel keeps selection and dismisses
+    def _close_schedule_modal(self) -> None:
+        """Close schedule modal via Apply, falling back to Cancel (keeps selection)."""
         for _ in range(3):
             if not self.is_schedule_modal_visible(timeout=1):
                 break
@@ -142,8 +138,39 @@ class CreateGroupActions(PageActions):
                 self._adb_tap_element(self._group_po.find_btn_cancel(), x_ratio=0.5)
         if self.is_schedule_modal_visible(timeout=2):
             raise TimeoutException("Schedule payment modal did not close")
+
+    def select_last_day_of_month_and_apply(self) -> None:
+        """Pick last day of month and close schedule modal until it is truly gone."""
+        self.wait_for_element_visible(self._group_po.loc_schedule_payment_title(), timeout=10)
+        last_day = self._group_po.find_last_day_of_month()
+        self._adb_tap_element(last_day, x_ratio=0.08)
+        self._close_schedule_modal()
         self.wait_for_element_visible(
             self._group_po.loc_fee_collection_day_last_of_month(), timeout=5
+        )
+
+    def select_weekly_monday_and_apply(self) -> None:
+        """Switch frequency to Weekly, select Mon, and close schedule modal.
+
+        Product: WeeklyFrequencySelector (chips Sun–Sat) + field text
+        ``Weekly: Monday`` (dayOfWeekLabels).
+        """
+        self.wait_for_element_visible(self._group_po.loc_schedule_payment_title(), timeout=10)
+        monthly = self.wait_for_element_visible(
+            self._group_po.loc_frequency_monthly(), timeout=10
+        )
+        self._adb_tap_element(monthly, x_ratio=0.5)
+        weekly = self.wait_for_element_visible(
+            self._group_po.loc_frequency_weekly(), timeout=5
+        )
+        self._adb_tap_element(weekly, x_ratio=0.5)
+        # Wait for weekly chip grid (default selection is Sun) before tapping Mon
+        self.wait_for_element_visible(self._group_po.loc_chip_sun(), timeout=10)
+        mon = self.wait_for_element_visible(self._group_po.loc_chip_mon(), timeout=5)
+        self._adb_tap_element(mon, x_ratio=0.5)
+        self._close_schedule_modal()
+        self.wait_for_element_visible(
+            self._group_po.loc_fee_collection_day_weekly_monday(), timeout=5
         )
 
     def _wait_for_save_ready(self, timeout: float = 15):
@@ -205,13 +232,24 @@ class CreateGroupActions(PageActions):
         member_mobile: str,
         group_name: str,
         amount: str,
+        fee_schedule: str = "monthly_last_day",
     ) -> None:
-        """Full create-group happy path from select members through promo dismiss."""
+        """Full create-group happy path from select members through promo dismiss.
+
+        fee_schedule:
+          - monthly_last_day — existing P0 (Monthly / last day of month)
+          - weekly_monday — Weekly / Mon chip (product WeeklyFrequencySelector)
+        """
         self.select_manually()
         self.enter_member_details(member_name, member_mobile)
         self.submit_add_member()
         self.enter_group_details(group_name, amount)
         self.open_fee_collection_day_picker()
-        self.select_last_day_of_month_and_apply()
+        if fee_schedule == "weekly_monday":
+            self.select_weekly_monday_and_apply()
+        elif fee_schedule == "monthly_last_day":
+            self.select_last_day_of_month_and_apply()
+        else:
+            raise ValueError(f"Unsupported fee_schedule: {fee_schedule}")
         self.save_group()
         self.dismiss_share_promo_if_visible()

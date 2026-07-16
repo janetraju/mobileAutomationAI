@@ -19,21 +19,31 @@ def format_indian_currency(amount: int | str) -> str:
     return f"{value:,}"
 
 
-def get_create_group_test_data() -> list:
-    """Return parametrized create-group data with runtime-unique names."""
+def _base_create_group_params(fee_schedule: str, case_id: str) -> pytest.param:
     suffix = _unique_suffix()
     member_name = f"AutoMember{suffix}"
     member_mobile = f"6{suffix}"[:10].ljust(10, "0")
     group_name = f"AutoGroup{suffix}"
     amount = "5000"
     formatted_fee = format_indian_currency(amount)
+    return pytest.param(
+        member_name,
+        member_mobile,
+        group_name,
+        amount,
+        formatted_fee,
+        fee_schedule,
+        id=case_id,
+    )
+
+
+def get_create_group_test_data() -> list:
+    """Return parametrized create-group data (monthly last day — P0-03)."""
+    return [_base_create_group_params("monthly_last_day", "manual_member_fixed_fee")]
+
+
+def get_create_group_weekly_test_data() -> list:
+    """Return create-group data with weekly Monday fee schedule — P0-04 (from product repo)."""
     return [
-        pytest.param(
-            member_name,
-            member_mobile,
-            group_name,
-            amount,
-            formatted_fee,
-            id="manual_member_fixed_fee",
-        )
+        _base_create_group_params("weekly_monday", "manual_member_weekly_monday")
     ]

@@ -13,9 +13,10 @@ disable-model-invocation: true
 ## When to use
 
 - Before creating any `*_po.py` file
-- After `onboard-mobile-app`
+- After `onboard-mobile-app` or `author-mobile-flow-docs`
+- After analyzing a **product/source repo** (code labels/keys are hints only)
 - User asks for selectors, Inspector output, or uiautomator dump
-- Flutter / RN / hybrid apps (APK metadata is never enough)
+- Flutter / RN / hybrid apps (APK or source analysis alone is never enough)
 
 ## Prerequisites
 
@@ -42,7 +43,7 @@ adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
 
 ```bash
 invoke ui:dump --screen=<screen_name>
-# saves docs/locators/<screen_name>.xml
+# writes docs/locators/<screen_name>.xml locally (gitignored — do not commit dumps)
 ```
 
 Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
@@ -80,11 +81,12 @@ Only after locator sheet exists for the screen.
 
 ## Rules
 
-- Never guess locators from APK decompilation alone
+- Never guess locators from APK decompilation or product source alone
+- Product repo / widget keys are **candidates** — confirm in the live dump
 - Re-dump after animations, keyboard open, or navigation
 - Name PO fields with prefixes: `btn_`, `input_`, `txt_`, `msg_`
-- Store raw dumps in `docs/locators/` — git-track dumps, not secrets
+- Store dumps under `docs/locators/` for the session; **do not commit** `*.xml` dumps (see `.gitignore`)
 
 ## iOS alternative
 
-Use Xcode Accessibility Inspector or Appium Inspector; save snapshot alongside XML convention: `docs/locators/<screen>_ios.xml`.
+Use Xcode Accessibility Inspector or Appium Inspector; save snapshot locally as `docs/locators/<screen>_ios.xml` (local only).

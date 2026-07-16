@@ -30,6 +30,7 @@ def user_creates_group_with_manual_member(
     member_mobile: str,
     group_name: str,
     amount: str,
+    fee_schedule: str = "monthly_last_day",
 ) -> None:
     """Complete create group flow through promo dismiss."""
     actions = CreateGroupActions(driver)
@@ -38,6 +39,7 @@ def user_creates_group_with_manual_member(
         member_mobile=member_mobile,
         group_name=group_name,
         amount=amount,
+        fee_schedule=fee_schedule,
     )
 
 
@@ -70,11 +72,17 @@ def user_creates_and_verifies_group_from_home(
     group_name: str,
     amount: str,
     formatted_fee: str,
+    fee_schedule: str = "monthly_last_day",
 ) -> None:
     """End-to-end create group P0 flow from home through verification."""
     user_opens_create_group_from_home(driver)
     user_creates_group_with_manual_member(
-        driver, member_name, member_mobile, group_name, amount
+        driver,
+        member_name,
+        member_mobile,
+        group_name,
+        amount,
+        fee_schedule=fee_schedule,
     )
     user_verifies_group_detail(
         driver, group_name, member_name, formatted_fee

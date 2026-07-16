@@ -38,11 +38,26 @@
 - Member row shows name and **Fee amount** matching entered amount
 - Overview cards visible (Amount Collected / Amount Due)
 
-| ID | Flow | Priority | Automation status | Notes |
-|----|------|----------|-------------------|-------|
-| P0-03 | Create group with manual member | P0 | **Done** | `tests/test/cofee/groups/test_create_group.py` |
-| P1-01 | Create group from contacts | P1 | Not started | Requires contacts permission |
-| P1-02 | Create group with installments toggle | P1 | Not started | |
+## Create group — weekly fee collection (from product repo)
+
+**Source:** `builds/cofee-app-develop` — `WeeklyFrequencySelector`, `group_settings.dart` frequencySelectors  
+**Precondition:** Same as above (logged-in Individual).
+
+| Step | Screen | Action |
+|------|--------|--------|
+| 1–6 | Same as P0-03 | Through opening schedule modal |
+| 7 | Schedule payment | Open **Frequency** dropdown (default Monthly) → **Weekly** |
+| 8 | Schedule payment | Tap weekday chip **Mon** → **Apply** |
+| 9 | Create group | Field shows **`Weekly: Monday`** → **Save** |
+| 10–11 | Promo → Group detail | Same success criteria as P0-03 |
+
+| ID | Flow | Priority | Automation status | Context | Notes |
+|----|------|----------|-------------------|---------|-------|
+| P0-03 | Create group with manual member (monthly last day) | P0 | **Done** | screenshots | `test_create_group_with_manual_member` |
+| P0-04 | Create group with weekly Monday fee | P0 | **Done** | product repo | `test_create_group_with_weekly_fee_collection` |
+| P1-01 | Create group from contacts | P1 | Not started | product repo | Requires contacts permission |
+| P1-02 | Create group with installments toggle | P1 | Not started | product repo | Amount ≥ org `splitRequiredAmountMin` |
+| P1-03 | Create group with two manual members | P1 | Not started | product repo | Members `+` on create form |
 
 ## Enable Partial Payment (from live discovery — confirmed)
 
@@ -76,17 +91,22 @@ that share the same card/kebab widget:
 
 ## Screen map
 
-| Screen | Entry | Page object | Locator dump |
-|--------|-------|-------------|--------------|
-| Home | After login | `home_po.py` | `docs/locators/home_logged_in.xml` |
-| Select members | Add New | `create_group_po.py` | `docs/locators/select_members.xml` |
-| Add member | Manually | `create_group_po.py` | `docs/locators/add_member.xml` |
-| Create group | After Add member | `create_group_po.py` | `docs/locators/create_group.xml` |
-| Schedule payment | Fee Collection Day | `create_group_po.py` | `docs/locators/schedule_payment.xml` |
-| Promo share | After Save | `create_group_po.py` | `docs/locators/share_promo.xml` |
-| Group detail | After I'll share later | `group_detail_po.py` | `docs/locators/group_detail.xml` |
-| Quick Collect (member/amount/note) | Group detail → Quick Collect | `quick_collect_po.py` | `docs/locators/enable_partial_payment.md` |
-| Payment card / kebab menu (3 screens) | See table above | `payment_card_po.py` | `docs/locators/enable_partial_payment.md` |
+| Screen | Entry | Page object | Locator discovery |
+|--------|-------|-------------|-------------------|
+| Home | After login | `home_po.py` | `invoke ui:dump --screen=home_logged_in` |
+| Select members | Add New | `create_group_po.py` | `invoke ui:dump --screen=select_members` |
+| Add member | Manually | `create_group_po.py` | `invoke ui:dump --screen=add_member` |
+| Create group | After Add member | `create_group_po.py` | `invoke ui:dump --screen=create_group` |
+| Schedule payment | Fee Collection Day | `create_group_po.py` | `invoke ui:dump --screen=schedule_payment` |
+| Promo share | After Save | `create_group_po.py` | `invoke ui:dump --screen=share_promo` |
+| Group detail | After I'll share later | `group_detail_po.py` | `invoke ui:dump --screen=group_detail` |
+| Quick Collect (member/amount/note) | Group detail → Quick Collect | `quick_collect_po.py` | `invoke ui:dump --screen=quick_collect` |
+| Payment card / kebab menu (3 screens) | See Enable Partial Payment table above | `payment_card_po.py` | `invoke ui:dump --screen=payment_card_kebab` — see [enable_partial_payment.md](locators/enable_partial_payment.md) for the confirmed locator table |
+
+UI dump XMLs are local/temporary — do not commit them (`docs/locators/*.xml`
+is gitignored). Locators live in page objects; the markdown locator
+*sheets* under `docs/locators/*.md` (e.g. `enable_partial_payment.md`) are
+committed reference documentation, not raw dumps.
 
 ## Known blockers
 
@@ -101,6 +121,7 @@ that share the same card/kebab widget:
 | Quick Collect's confirm button text is dynamic ("Add 1 member") | Match via `descriptionContains`, not exact "Add members" |
 | Kebab-menu "Show menu" is a descendant of the card's container, not a sibling | Use XPath descendant axis (`//*[contains(@content-desc,"X")]//*[@content-desc="Show menu"]`), not UiAutomator `fromParent()` |
 | Emulator occasionally crashes/degrades under sustained runs (software rendering, no GPU accel in this sandbox) | Re-run failed cases individually; not a code defect — see `enable-partial-payment-testcases.md` automation notes |
+| `TEST_MOBILE` must be the **10-digit local number only, no `+91` prefix** | The login screen's country-code chip (🇮🇳 +91) is a separate fixed element; `enter_phone_number()` types the value char-by-char straight into the local-number field — a `+91` prefix corrupts the digits |
 
 ## Test data
 

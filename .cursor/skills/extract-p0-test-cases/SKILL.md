@@ -5,11 +5,12 @@ description: >-
   priorities (P0/P1/P2) and categories (happy path, negative, edge,
   permission/OS dialog, state/navigation, accessibility, platform,
   regression) for any app in this repo. Prefers
-  docs/context/<app_slug>-<feature>-context.md from get-context;
-  falls back to docs/<app_slug>-flow.md when no context file exists yet.
-  Use when the user asks for P0/smoke cases, test cases for a feature, or
-  "which flows to automate first." Presents a draft in chat and requires
-  approval before writing docs/context/<app_slug>-<feature>-testcases.md.
+  docs/context/<app_slug>-<feature>-context.md from get-context; falls back
+  to docs/<app_slug>-flow.md (fed by screenshots, Figma, or product-repo
+  analysis) when no context file exists yet. Use when the user asks for
+  P0/smoke cases, test cases for a feature, or "which flows to automate
+  first." Presents a draft in chat and requires approval before writing
+  docs/context/<app_slug>-<feature>-testcases.md.
 disable-model-invocation: true
 ---
 
@@ -30,14 +31,18 @@ Use paths with your configured `<app_slug>` (current app: `cofee`):
    scope, flow, business rules/AC, elements (🟡 hypotheses), existing
    automation coverage, open questions
 3. **Fallback**, only if no context file exists yet: `docs/<app_slug>-flow.md`
-   (or `docs/cofee-flow.md`) + `docs/assets/`
+   (or `docs/cofee-flow.md`) + whatever fed it this session —
+   `docs/assets/` (screenshots, Figma exports) **and/or** a product/source
+   repo the user shared (screens, routes, validation)
 4. **`.env.example`**, **`data/<app_slug>/`**
 5. **`tests/test/<app_slug>/`** — existing coverage (even `fixme`/skipped) — reference, don't duplicate
 6. **`src/page_objects/<app_slug>/`** — implemented screens
 
 If neither a context file nor a flow doc section covers the requested
-feature, mark it **"Not in docs — confirm with user"** — never invent
-flows, steps, or element labels.
+feature, mark it **"Not in docs — confirm with user"** — or, if a product
+repo is available this session, run `author-mobile-flow-docs` first (or
+extract candidates and mark them **Unconfirmed** until the flow doc is
+updated). Never invent flows, steps, or element labels.
 
 ---
 
@@ -56,6 +61,7 @@ flows, steps, or element labels.
 | 9 | **Parametrize, don't hand-duplicate** — 3+ cases that only vary one input (e.g. 4 invalid phone-number formats) become one case with a small data table, not 4 blocks. |
 | 10 | **Mobile-appropriate categories only** — no web concepts (routes, RTK, `data-testid`). |
 | 11 | **Automation status reflects reality** — cross-check `tests/test/<app_slug>/` before marking anything "Done." |
+| 12 | **Product-repo provenance** — a flow sourced only from a product/source repo (not yet in the flow doc) gets its cases tagged `[Assumption]` same as any other unconfirmed source; never fabricate locators from repo code alone — those come after `discover-mobile-locators`. |
 
 ---
 

@@ -51,6 +51,10 @@ class CreateGroupPo(BasePage):
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().descriptionContains("Last day of the month")',
         )
+        self._fee_collection_day_weekly_monday_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().descriptionContains("Weekly: Monday")',
+        )
         self._title_schedule_payment_uia = (
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().description("Schedule payment collection")',
@@ -58,6 +62,23 @@ class CreateGroupPo(BasePage):
         self._opt_last_day_uia = (
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().description("Last day of the month")',
+        )
+        # Frequency dropdown + weekly chips (from frequency_popup / WeeklyFrequencySelector)
+        self._ddl_frequency_monthly_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().description("Monthly")',
+        )
+        self._opt_frequency_weekly_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().description("Weekly")',
+        )
+        self._chip_mon_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().description("Mon")',
+        )
+        self._chip_sun_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().description("Sun")',
         )
         self._btn_apply_uia = (
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -104,21 +125,54 @@ class CreateGroupPo(BasePage):
         """Fee Collection Day picker field on create group form."""
         if self.is_displayed(self._fee_collection_day_uia):
             return self._driver.find_element(*self._fee_collection_day_uia)
+        if self.is_displayed(self._fee_collection_day_weekly_monday_uia):
+            return self._driver.find_element(*self._fee_collection_day_weekly_monday_uia)
         return self._driver.find_element(*self._fee_collection_day_filled_uia)
 
     def loc_fee_collection_day_field(self) -> tuple[str, str]:
         """Locator for empty or filled fee collection day field."""
         if self.is_displayed(self._fee_collection_day_uia):
             return self._fee_collection_day_uia
+        if self.is_displayed(self._fee_collection_day_weekly_monday_uia):
+            return self._fee_collection_day_weekly_monday_uia
         return self._fee_collection_day_filled_uia
 
     def loc_fee_collection_day_last_of_month(self) -> tuple[str, str]:
         """Locator when fee collection day is set to last day of month."""
         return self._fee_collection_day_filled_uia
 
+    def loc_fee_collection_day_weekly_monday(self) -> tuple[str, str]:
+        """Locator when fee collection day is Weekly: Monday."""
+        return self._fee_collection_day_weekly_monday_uia
+
     def find_last_day_of_month(self):
         """Last day of the month radio on schedule modal."""
         return self._driver.find_element(*self._opt_last_day_uia)
+
+    def find_frequency_monthly_dropdown(self):
+        """Frequency dropdown when Monthly is selected."""
+        return self._driver.find_element(*self._ddl_frequency_monthly_uia)
+
+    def find_frequency_weekly_option(self):
+        """Weekly option in frequency dropdown."""
+        return self._driver.find_element(*self._opt_frequency_weekly_uia)
+
+    def find_chip_mon(self):
+        """Mon weekday chip on weekly schedule selector."""
+        return self._driver.find_element(*self._chip_mon_uia)
+
+    def loc_frequency_monthly(self) -> tuple[str, str]:
+        return self._ddl_frequency_monthly_uia
+
+    def loc_frequency_weekly(self) -> tuple[str, str]:
+        """Prefer description; Flutter chips/options often have empty text attrs."""
+        return self._opt_frequency_weekly_uia
+
+    def loc_chip_mon(self) -> tuple[str, str]:
+        return self._chip_mon_uia
+
+    def loc_chip_sun(self) -> tuple[str, str]:
+        return self._chip_sun_uia
 
     def find_btn_apply(self):
         """Apply button on schedule payment modal."""
