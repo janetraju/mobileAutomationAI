@@ -161,8 +161,8 @@ cases exactly as shown (no silent changes after approval).
 ```text
 Test cases approved and written to
 docs/context/<app_slug>-<slug>-testcases.md (N cases).
-Next: mobile-appium-python (after discover-mobile-locators confirms any
-outstanding 🟡 locator hypotheses live).
+Next: discover-mobile-locators (confirm 🟡 locator hypotheses live), then
+automate-a-flow → mobile-appium-python to implement.
 ```
 
 Offer to update `docs/<app_slug>-flow.md`'s priority matrix with the P0
@@ -183,6 +183,6 @@ subset (user approval required).
 
 ## Related skills
 
-`get-context` · `author-mobile-flow-docs` ·
-`discover-mobile-locators` · `mobile-appium-python` ·
+`get-context` · `author-mobile-flow-docs` · `discover-mobile-locators` ·
+`automate-a-flow` · `mobile-appium-python` ·
 [testcase-template.md](testcase-template.md)

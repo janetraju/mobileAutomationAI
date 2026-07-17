@@ -1,21 +1,27 @@
 ---
 name: mobile-appium-python
 description: >-
-  Write and maintain Appium mobile tests using Pytest, Python, and Allure
-  in this repo. Use when authoring page objects, page actions, steps, locators,
-  driver fixtures, dataproviders, debugging flaky mobile tests, or Android/iOS
-  automation for any app configured in this framework.
+  Author and maintain four-layer Appium code (page objects, actions, steps,
+  dataproviders, tests), markers, fixtures, and flaky-test fixes in this repo.
+  Use when writing or editing a specific layer file, or debugging locators/
+  markers. For end-to-end "automate this scenario" orchestration (prereqs,
+  MCP walkthrough, verify order), use automate-a-flow first.
 disable-model-invocation: true
 ---
 
 # Mobile Appium Python Skill
 
+Layer patterns and coding rules. **Orchestration** (prereqs → MCP walk →
+implement → verify) belongs in **`automate-a-flow`** — call that first for a
+new scenario, then use this skill for the files.
+
 ## Before you write code
 
 1. Read **`AGENTS.md`** (repo root).
 2. Confirm **`PLATFORM`** and **`APP_SLUG`** from `.env` / `src/core/settings.py`.
-3. Read **`docs/<app_slug>-flow.md`** (flows from screenshots and/or product repo).
-4. Inspect the **real UI** (Appium Inspector, `invoke ui:dump`, iOS Accessibility Inspector) before writing locators — never guess selectors from product source alone.
+3. Read **`docs/<app_slug>-flow.md`** and approved testcases if present.
+4. Confirm locators via **`discover-mobile-locators`** / Appium MCP — never
+   guess selectors from product source alone.
 
 ## Authoring from a product/source repo
 
@@ -85,11 +91,41 @@ invoke install
 invoke emulator:start
 invoke appium:start
 invoke appium:doctor
-invoke test --markers "e2e and p0"
-invoke lint --fix
+invoke lint                       # auto-fix ruff + black (default)
+invoke lint --no-fix              # check-only
+invoke test --markers "e2e and p0"   # clean → lint (auto-fix) → pytest
 invoke report
 ```
+
+## Lint (auto-fix by default)
+
+`invoke lint` and `invoke test` always run **ruff --fix** + **black** write mode.
+
+- Check-only: `invoke lint --no-fix`
+- If anything remains unfixed (e.g. unused import needing judgment), fix in code,
+  then `invoke lint` again — do not leave formatting for the user to do by hand.
 
 ## Sync API only
 
 Use `appium.webdriver.webdriver.WebDriver` (sync). Do not mix async Appium clients.
+
+## Before a new feature test
+
+Follow **`automate-a-flow`** — login P0 on a clean emulator first, walk the
+scenario on device (`discover-mobile-locators`), then implement layers here.
+
+## Pytest fixtures (`tests/conftest.py`)
+
+| Fixture | Scope | Source |
+|---------|-------|--------|
+| `driver` | session | `SessionManager.get_driver(profile=auth_profile)` |
+| `settings` | session | `get_settings()` |
+| `mobile` / `otp` | session | `TEST_MOBILE` / `TEST_OTP` from env |
+
+CLI overrides: `--env`, `--platform`, `--device`, `--headless-emulator`,
+`--record-video`. Tests live under `tests/test/<app_slug>/<feature>/`.
+
+## Related skills
+
+`automate-a-flow` · `discover-mobile-locators` · `setup-mobile-test-data` ·
+`read-test-reports` · `review-changes` · [AGENTS.md](../../../AGENTS.md)

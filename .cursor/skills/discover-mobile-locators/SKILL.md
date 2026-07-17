@@ -48,6 +48,24 @@ invoke ui:dump --screen=<screen_name>
 
 Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
 
+### 3b. Appium MCP (live tree — mandatory for new TCs)
+
+**Required before any new test scenario** — see **`automate-a-flow` Step 2d**.
+Also use when `invoke ui:dump` is stale or you need interactive exploration.
+
+Project **Appium MCP** server (`.cursor/mcp.json`):
+
+1. Ensure emulator/device is running and `.env` matches
+   `environment/appium-mcp.capabilities.json`
+2. `select_device` → `appium_session_management` (`action=create`)
+3. Walk the full scenario — navigate each screen via `appium_gesture` /
+   `appium_set_value`
+4. Per screen: `appium_get_page_source` → save to `docs/locators/<screen>.xml`
+5. `generate_locators` on key screens — **confirm every selector** against page
+   source and app strings before `*_po.py`
+
+Screenshots land in `target/mcp-screenshots/` when `NO_UI=true`.
+
 ### 4. Parse dump — locator priority
 
 | Priority | Android (UiAutomator2) | iOS (XCUITest) |
@@ -58,7 +76,60 @@ Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
 | 4 | `class` + index | class chain |
 | 5 | XPath | XPath (last resort) |
 
-### 5. App-type notes
+### 5. Naming convention
+
+Use these names on the locator sheet **and** in `*_po.py` so dumps map 1:1 to code.
+
+#### Element-type prefixes (PO field / method stem)
+
+| Prefix | Element kind | Example stem |
+|--------|--------------|--------------|
+| `btn_` | Button / tappable CTA | `btn_continue`, `btn_quick_collect` |
+| `input_` | Text field / EditText | `input_mobile`, `input_otp` |
+| `txt_` | Static label / title | `txt_welcome`, `txt_phone_title` |
+| `msg_` | Error / snackbar / toast | `msg_whitelist_error` |
+| `chk_` | Checkbox / switch | `chk_terms` |
+| `ddl_` | Dropdown / picker | `ddl_org` |
+| `lnk_` | Link / text button | `lnk_view_payments` |
+| `icn_` | Icon-only control | `icn_kebab_menu` |
+| `tab_` | Bottom / top tab | `tab_groups` |
+| `card_` | List / payment card | `card_member` |
+
+Snake_case only. Stem = role + screen-meaningful name (`btn_enable_partial_payment`, not `btn1`).
+
+#### Strategy suffixes (private locator attrs in `# --- Locators ---`)
+
+| Suffix | Strategy | Example attr |
+|--------|----------|--------------|
+| `_acc` | `ACCESSIBILITY_ID` / content-desc | `_btn_continue_acc` |
+| `_uia` | `ANDROID_UIAUTOMATOR` | `_btn_add_members_uia` |
+| `_ios` | `IOS_PREDICATE` / `IOS_CLASS_CHAIN` | `_btn_continue_ios` |
+| `_class` | `CLASS_NAME` | `_input_phone_class` |
+| `_text` | text-based UiSelector / label | `_btn_allow_text` |
+| `_xpath` | XPath — last resort; justify in comment | `_card_member_xpath` |
+
+Pattern: `self._<prefix><name>_<strategy>`
+
+#### Public PO methods
+
+| Method | Returns | Example |
+|--------|---------|---------|
+| `find_<prefix><name>()` | `WebElement` | `find_btn_continue()` |
+| `loc_<prefix><name>()` | `(by, value)` tuple for waits | `loc_btn_continue()` |
+
+Do **not** put the strategy suffix on `find_*` / `loc_*` — only on the private attr.
+
+#### Dump / sheet file names
+
+| Artifact | Pattern | Example |
+|----------|---------|---------|
+| UI dump | `docs/locators/<screen>.xml` | `login_phone.xml`, `home_logged_in.xml` |
+| iOS dump | `docs/locators/<screen>_ios.xml` | `login_otp_ios.xml` |
+| Locator sheet | `docs/locators/<screen>.md` (optional) | PO name column = method stem (`input_mobile`) |
+
+Screen names: lowercase snake_case, no spaces (`group_detail`, not `Group Detail`).
+
+### 6. App-type notes
 
 | `APP_TYPE` | Guidance |
 |------------|----------|
@@ -67,15 +138,18 @@ Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
 | `hybrid` | Dump in native context; switch WebView for H5 screens (`switch_to_webview` in actions) |
 | `native` | `resource-id` usually stable |
 
-### 6. Produce locator sheet
+### 7. Produce locator sheet
 
 For each interactive element, document in `docs/<app_slug>-flow.md` or `docs/locators/<screen>.md`:
 
 | PO name | Element | Strategy | Locator value | Confirmed |
 |---------|---------|----------|---------------|-----------|
 | `input_mobile` | Phone field | accessibility id | `...` | yes |
+| `btn_continue` | Submit CTA | accessibility id | `Continue` | yes |
 
-### 7. Hand off to `mobile-appium-python`
+PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobile`).
+
+### 8. Hand off to `mobile-appium-python`
 
 Only after locator sheet exists for the screen.
 
@@ -84,7 +158,7 @@ Only after locator sheet exists for the screen.
 - Never guess locators from APK decompilation or product source alone
 - Product repo / widget keys are **candidates** — confirm in the live dump
 - Re-dump after animations, keyboard open, or navigation
-- Name PO fields with prefixes: `btn_`, `input_`, `txt_`, `msg_`
+- Follow **§5 Naming convention** — prefixes + strategy suffixes + `find_*` / `loc_*`
 - Store dumps under `docs/locators/` for the session; **do not commit** `*.xml` dumps (see `.gitignore`)
 
 ## iOS alternative

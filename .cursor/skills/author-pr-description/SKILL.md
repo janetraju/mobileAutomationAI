@@ -105,4 +105,5 @@ for iteration, only for the final go-ahead.
 
 ## Related skills
 
-`mobile-appium-python` · [AGENTS.md](../../../AGENTS.md)
+`review-changes` · `mobile-appium-python` · `read-test-reports` ·
+[AGENTS.md](../../../AGENTS.md)

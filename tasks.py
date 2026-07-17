@@ -85,11 +85,14 @@ def ui_dump(c, screen="screen"):
 
 
 @task
-def lint(c, fix=False):
-    """Run ruff and black."""
-    fix_flag = "--fix" if fix else ""
-    c.run(f"ruff check src tests {fix_flag}", pty=True)
-    c.run("black --check src tests" if not fix else "black src tests", pty=True)
+def lint(c, fix=True):
+    """Auto-fix with ruff + black (use --no-fix for check-only)."""
+    if fix:
+        c.run("ruff check src tests --fix", pty=True)
+        c.run("black src tests", pty=True)
+    else:
+        c.run("ruff check src tests", pty=True)
+        c.run("black --check src tests", pty=True)
 
 
 @task
@@ -109,9 +112,9 @@ def clean(c):
 
 @task
 def test(c, markers="", env="", platform="", parallel="auto", extra=""):
-    """Clean, lint, and run pytest."""
+    """Clean, auto-fix lint (ruff + black), and run pytest."""
     clean(c)
-    lint(c)
+    lint(c, fix=True)
     cmd = "pytest"
     if markers:
         cmd += f' -m "{markers}"'
