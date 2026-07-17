@@ -77,8 +77,14 @@ From APK strings / manifest, draft **hypothesized** flows — mark as `Unconfirm
 
 ### 6. Hand off
 
-```
-onboard-mobile-app  →  discover-mobile-locators  →  extract-p0-test-cases  →  setup-mobile-test-data  →  mobile-appium-python
+```text
+onboard-mobile-app
+  → get-context | author-mobile-flow-docs
+  → extract-p0-test-cases
+  → discover-mobile-locators
+  → setup-mobile-test-data
+  → automate-a-flow
+  → mobile-appium-python
 ```
 
 ## Rules

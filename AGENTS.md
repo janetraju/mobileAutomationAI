@@ -38,11 +38,11 @@ invoke report
 | `invoke appium:start` | Start Appium 2.x server |
 | `invoke appium:doctor` | Environment health check |
 | `invoke appium:install-drivers` | Install UiAutomator2 + XCUITest drivers |
-| `invoke lint` | Ruff + Black check |
-| `invoke lint --fix` | Auto-fix lint issues |
+| `invoke lint` | Auto-fix with ruff (`--fix`) + black |
+| `invoke lint --no-fix` | Check-only (no writes) |
 | `invoke precommit` | Run all pre-commit hooks |
 | `invoke clean` | Remove `target/`, caches |
-| `invoke test` | clean → lint → pytest |
+| `invoke test` | clean → lint (auto-fix) → pytest |
 | `invoke report` | Generate + open Allure report |
 
 ## Directory tree
@@ -97,43 +97,86 @@ Prefix convention: `btn_`, `txt_`, `input_`, `chk_`, `ddl_`, `lnk_`, `msg_`, `ic
 
 `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_ENV`, `PLATFORM`, `APPIUM_HOST`, `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`, `API_BASE_URL`, `TEST_MOBILE`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`, `NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
 
-## Skills (lifecycle order)
+## Skills
+
+Canonical copies live in `.cursor/skills/`. `.claude/skills/` are **symlinks** to
+those same folders (not duplicates) so Claude slash-commands resolve.
+
+### Feature lifecycle (use in order)
+
+| Skill | Role | Output / handoff |
+|-------|------|------------------|
+| `onboard-mobile-app` | New APK/IPA → registry, `.env`, folder rename | Ready for discovery |
+| `get-context` | **Preferred** feature intake (PRD/Figma/Jira/app source) | `docs/context/<app_slug>-<feature>-context.md` |
+| `author-mobile-flow-docs` | **Fallback** only when `get-context` was not run — screenshots / walkthrough / product repo → flow doc | `docs/<app_slug>-flow.md` |
+| `extract-p0-test-cases` | Generate P0/P1/P2 cases from context or flow doc (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
+| `discover-mobile-locators` | Live UI dump / Appium MCP — confirm locators (never invent) | `docs/locators/<screen>.xml` + locator sheet |
+| `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` | Test data ready |
+| `automate-a-flow` | **Orchestrate** an approved scenario: prerequisites → MCP walkthrough → then call coding skill | Working E2E for one flow |
+| `mobile-appium-python` | **Write code** — PO / actions / steps / dataprovider / test patterns, markers, flaky playbook | Layered automation files |
+
+`automate-a-flow` and `mobile-appium-python` are **not** duplicates:
+orchestration vs layer authoring. Prefer `automate-a-flow` when the user says
+"automate this"; use `mobile-appium-python` when editing an existing layer or
+debugging flaky locators/markers.
+
+### Supporting (any time)
 
 | Skill | When to use |
 |-------|-------------|
-| `onboard-mobile-app` | New APK/IPA → config, registry, folder rename |
-| `get-context` | Mandatory intake (PRD/Figma/Jira/app source) first, then discovery → `docs/context/<app_slug>-<feature>-context.md` |
-| `author-mobile-flow-docs` | Screenshots/walkthrough/Figma **or product/source repo** → `docs/<app_slug>-flow.md` (when `get-context` wasn't run) |
-| `discover-mobile-locators` | Install app + UI dump before writing POs (required for mobile) |
-| `extract-p0-test-cases` | Full test cases (P0/P1/P2, all categories) from a `get-context` context file, flow docs, or product-repo analysis → `docs/context/<app_slug>-<feature>-testcases.md`, approval gated |
-| `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` |
-| `mobile-appium-python` | Author POs, actions, steps, tests |
+| `read-test-reports` | **Generate** Allure HTML (`invoke report`) and **read**/triage failure artifacts |
+| `review-changes` | Code review checklist before merge |
+| `author-pr-description` | Draft PR body from real branch diff (approval before `gh pr create`) |
 
-## Feature context (`get-context`, screenshots, or product repo)
+### Pipeline
 
-Feature context may come from:
-
-- **`get-context`** — dedicated discovery skill with a mandatory intake gate (PRD/Figma/Jira/app source) and live-device-validated output; the recommended entry point
-- Screenshots / walkthrough / Figma, fed directly into `author-mobile-flow-docs`, **or**
-- A **product/source repo** (Flutter/RN/native screens, routes, widgets, labels, validation), fed into `get-context` or directly into `author-mobile-flow-docs`
-
-Treat that input as the **flow spec** (happy path, fields, success criteria).  
-**Always** confirm locators on a running app (`invoke ui:dump` / emulator) before treating page objects as final — repo code alone is not enough for mobile UI automation.
-
-```
-context (get-context | screenshots | product repo)
-  → author-mobile-flow-docs   # only if get-context wasn't run
+```text
+# Preferred
+get-context
   → extract-p0-test-cases
-  → discover-mobile-locators   # live device dump — always required
+  → discover-mobile-locators   # invoke ui:dump and/or Appium MCP
   → setup-mobile-test-data
-  → mobile-appium-python
+  → automate-a-flow            # MCP walkthrough mandatory before new TC
+  → mobile-appium-python       # layer implementation
+
+# Fallback (no get-context this session)
+author-mobile-flow-docs → extract-p0-test-cases → (same from discover onward)
+
+# New app binary only
+onboard-mobile-app → get-context | author-mobile-flow-docs → …
 ```
+
+Treat context / flow docs as the **flow spec**. Locators must always be
+confirmed on a running app — product source alone is never enough.
+
+## MCP Tools
+
+### Appium MCP (project-local)
+
+| File | Purpose |
+|------|---------|
+| `.cursor/mcp.json` | Cursor MCP server (`npx appium-mcp@latest`) |
+| `environment/appium-mcp.capabilities.json` | Android/iOS caps — keep aligned with `.env` |
+
+**Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.
+**Enable:** Restart Cursor / reload MCP → toggle **appium-mcp** under Customize → MCP.
+
+Full walkthrough steps live in **`automate-a-flow` Step 2d** (and
+`discover-mobile-locators` §3b). Screenshots → `target/mcp-screenshots/` when
+`NO_UI=true`.
+
+### Figma MCP
+
+Design copy only — confirm via live dump. See **`get-context`**.
 
 ## Product flows
 
-Read **`docs/cofee-flow.md`** before writing tests. Do not invent flows or selectors not documented **or** inspected on device.
+Read **`docs/cofee-flow.md`** before writing tests. Do not invent flows or
+selectors not documented **or** inspected on device.
 
-## Adding a feature (order)
+## Adding a feature (code order)
+
+Use **`automate-a-flow`** for the full workflow. Layer files:
 
 1. `src/page_objects/cofee/<screen>_po.py`
 2. `src/page_actions/cofee/<screen>_actions.py`
@@ -141,4 +184,5 @@ Read **`docs/cofee-flow.md`** before writing tests. Do not invent flows or selec
 4. `tests/dataprovider/dp_<feature>.py`
 5. `tests/test/cofee/<feature>/test_<feature>.py`
 
-Every UI test: `@pytest.mark.e2e`, priority (`p0`/`p1`/`p2`), Allure labels, platform marker when needed.
+Every UI test: `@pytest.mark.e2e`, priority (`p0`/`p1`/`p2`), Allure labels,
+platform marker when needed.

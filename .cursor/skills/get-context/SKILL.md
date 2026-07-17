@@ -222,13 +222,21 @@ dialogs.
 
 ## Phase 8 — Hand off
 
-```
-get-context → author-mobile-flow-docs → discover-mobile-locators
-  → extract-p0-test-cases → setup-mobile-test-data → mobile-appium-python
+```text
+get-context
+  → extract-p0-test-cases
+  → discover-mobile-locators   # live dump / Appium MCP
+  → setup-mobile-test-data
+  → automate-a-flow            # MCP walkthrough before code
+  → mobile-appium-python
 ```
 
-Live session in `discover-mobile-locators` is what actually confirms every
-🟡 hypothesis — this skill never writes to `src/page_objects/`.
+Optionally refresh `docs/<app_slug>-flow.md` from this context (user approval) —
+do **not** re-run `author-mobile-flow-docs` as a full discovery pass; that skill
+is only the fallback when `get-context` was not used.
+
+Live session in `discover-mobile-locators` confirms every 🟡 hypothesis —
+this skill never writes to `src/page_objects/`.
 
 ---
 
@@ -257,5 +265,5 @@ Live session in `discover-mobile-locators` is what actually confirms every
 
 ## Related skills
 
-`author-mobile-flow-docs` · `discover-mobile-locators` ·
-`extract-p0-test-cases` · [AGENTS.md](../../../AGENTS.md)
+`extract-p0-test-cases` · `discover-mobile-locators` · `automate-a-flow` ·
+`mobile-appium-python` · [AGENTS.md](../../../AGENTS.md)

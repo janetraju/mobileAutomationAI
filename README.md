@@ -91,12 +91,14 @@ pytest --record-video --headless-emulator
 ## Linting
 
 ```bash
-invoke lint          # check
-invoke lint --fix    # auto-fix
-invoke precommit     # all hooks
+invoke lint            # auto-fix (ruff --fix + black) — default
+invoke lint --no-fix   # check-only
+invoke test            # clean → lint (auto-fix) → pytest
+invoke precommit       # all hooks
 ```
 
-Pre-commit runs **ruff** (with fix) and **black**.
+Pre-commit runs **ruff** (with fix) and **black**. `invoke lint` and `invoke test`
+always auto-fix unless you pass `--no-fix` to lint.
 
 ## Current app: CoFee
 

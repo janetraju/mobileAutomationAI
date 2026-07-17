@@ -76,7 +76,8 @@ If `DB_HOST` is set, use `psycopg` in test setup/teardown — keep SQL in `data/
 
 ## Hand off
 
-After data strategy is documented and `.env.<env>` is configured → **`mobile-appium-python`** for implementation.
+After data strategy is documented and `.env.<env>` is configured →
+**`automate-a-flow`** (orchestration) → **`mobile-appium-python`** (layer code).
 
 ## Rules
 

@@ -1,20 +1,26 @@
 ---
 name: author-mobile-flow-docs
 description: >-
-  Document mobile app user flows from screenshots, walkthroughs, Figma, or a
-  product/source repo into docs/<app_slug>-flow.md. Use before
-  extract-p0-test-cases or discover-mobile-locators when adding a new feature.
+  Fallback flow documentation when get-context was not run: turn screenshots,
+  walkthroughs, Figma, or a product/source repo into docs/<app_slug>-flow.md.
+  Prefer get-context for full intake + context file. Use before
+  extract-p0-test-cases when adding a feature without get-context.
 disable-model-invocation: true
 ---
 
 # Author Mobile Flow Docs
 
+**Fallback** for flow docs. Prefer **`get-context`** when available — it writes
+`docs/context/<app_slug>-<feature>-context.md` with intake. Use this skill when
+the user only has screenshots / a walkthrough / product repo and did not run
+`get-context`.
+
 ## When to use
 
-- User shares screenshots, screen recording, or step-by-step flow
-- User shares a **product / feature source repo** (Flutter, RN, native, or docs in git)
-- New feature before automation (groups, payments, onboarding, etc.)
-- Updating `docs/<app_slug>-flow.md` after product changes
+- User shares screenshots, screen recording, or step-by-step flow **and**
+  `get-context` was not run
+- User shares a **product / feature source repo** without running `get-context`
+- Updating `docs/<app_slug>-flow.md` after product changes (light edit)
 
 ## Read first
 
@@ -68,9 +74,15 @@ Add or extend:
 
 ### 4. Hand off
 
-```
-author-mobile-flow-docs → extract-p0-test-cases → discover-mobile-locators
-  → setup-mobile-test-data → mobile-appium-python
+Use this skill only when **`get-context` was not run** this session.
+
+```text
+author-mobile-flow-docs
+  → extract-p0-test-cases
+  → discover-mobile-locators
+  → setup-mobile-test-data
+  → automate-a-flow
+  → mobile-appium-python
 ```
 
 ## Rules
