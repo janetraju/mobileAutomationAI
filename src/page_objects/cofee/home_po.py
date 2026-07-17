@@ -23,6 +23,8 @@ class HomePo(BasePage):
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().descriptionContains("Groups")',
         )
+        self._tab_payments_acc = (AppiumBy.ACCESSIBILITY_ID, "Payments")
+        self._tab_groups_acc = (AppiumBy.ACCESSIBILITY_ID, "Groups")
 
     def find_tab_home(self):
         """Bottom navigation Home tab."""
@@ -43,3 +45,11 @@ class HomePo(BasePage):
     def loc_section_groups(self) -> tuple[str, str]:
         """Locator tuple for Groups section header."""
         return self._section_groups_uia
+
+    def loc_tab_payments(self) -> tuple[str, str]:
+        """Bottom navigation Payments tab."""
+        return self._tab_payments_acc
+
+    def loc_tab_groups(self) -> tuple[str, str]:
+        """Bottom navigation Groups tab."""
+        return self._tab_groups_acc

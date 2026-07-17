@@ -5,6 +5,7 @@ description: >-
   in this repo. Use when authoring page objects, page actions, steps, locators,
   driver fixtures, dataproviders, debugging flaky mobile tests, or Android/iOS
   automation for any app configured in this framework.
+disable-model-invocation: true
 ---
 
 # Mobile Appium Python Skill

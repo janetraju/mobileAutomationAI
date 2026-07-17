@@ -65,3 +65,13 @@ class HomeActions(PageActions):
         self.scroll_to_groups_section()
         add_new = self.wait_for_element_visible(self._home_po.loc_add_new(), timeout=10)
         self.tap(add_new)
+
+    def tap_payments_tab(self) -> None:
+        """Open the global 'All payments' screen via the bottom nav tab."""
+        tab = self.wait_for_element_visible(self._home_po.loc_tab_payments(), timeout=10)
+        self.tap(tab)
+
+    def tap_groups_tab(self) -> None:
+        """Open the Groups list via the bottom nav tab."""
+        tab = self.wait_for_element_visible(self._home_po.loc_tab_groups(), timeout=10)
+        self.tap(tab)

@@ -5,6 +5,7 @@ description: >-
   and capturing accessibility trees. Use before writing page objects, when
   onboarding a new app, after UI changes, or when APK analysis is insufficient
   for Flutter, React Native, or hybrid apps.
+disable-model-invocation: true
 ---
 
 # Discover Mobile Locators

@@ -102,27 +102,29 @@ Prefix convention: `btn_`, `txt_`, `input_`, `chk_`, `ddl_`, `lnk_`, `msg_`, `ic
 | Skill | When to use |
 |-------|-------------|
 | `onboard-mobile-app` | New APK/IPA → config, registry, folder rename |
-| `author-mobile-flow-docs` | Screenshots/walkthrough **or product/source repo** → `docs/<app_slug>-flow.md` |
+| `get-context` | Mandatory intake (PRD/Figma/Jira/app source) first, then discovery → `docs/context/<app_slug>-<feature>-context.md` |
+| `author-mobile-flow-docs` | Screenshots/walkthrough/Figma **or product/source repo** → `docs/<app_slug>-flow.md` (when `get-context` wasn't run) |
 | `discover-mobile-locators` | Install app + UI dump before writing POs (required for mobile) |
-| `extract-p0-test-cases` | P0 smoke cases from flow docs (fed by screenshots and/or repo analysis) |
+| `extract-p0-test-cases` | Full test cases (P0/P1/P2, all categories) from a `get-context` context file, flow docs, or product-repo analysis → `docs/context/<app_slug>-<feature>-testcases.md`, approval gated |
 | `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` |
 | `mobile-appium-python` | Author POs, actions, steps, tests |
 
-## Feature context (screenshots **or** product repo)
+## Feature context (`get-context`, screenshots, or product repo)
 
 Feature context may come from:
 
-- Screenshots / walkthrough / Figma, **or**
-- A **product/source repo** (Flutter/RN/native screens, routes, widgets, labels, validation)
+- **`get-context`** — dedicated discovery skill with a mandatory intake gate (PRD/Figma/Jira/app source) and live-device-validated output; the recommended entry point
+- Screenshots / walkthrough / Figma, fed directly into `author-mobile-flow-docs`, **or**
+- A **product/source repo** (Flutter/RN/native screens, routes, widgets, labels, validation), fed into `get-context` or directly into `author-mobile-flow-docs`
 
 Treat that input as the **flow spec** (happy path, fields, success criteria).  
 **Always** confirm locators on a running app (`invoke ui:dump` / emulator) before treating page objects as final — repo code alone is not enough for mobile UI automation.
 
 ```
-context (screenshots | product repo)
-  → author-mobile-flow-docs
+context (get-context | screenshots | product repo)
+  → author-mobile-flow-docs   # only if get-context wasn't run
   → extract-p0-test-cases
-  → discover-mobile-locators   # live device dump
+  → discover-mobile-locators   # live device dump — always required
   → setup-mobile-test-data
   → mobile-appium-python
 ```

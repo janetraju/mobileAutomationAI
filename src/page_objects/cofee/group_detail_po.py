@@ -30,6 +30,8 @@ class GroupDetailPo(BasePage):
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().description("Amount Due")',
         )
+        self._btn_quick_collect_acc = (AppiumBy.ACCESSIBILITY_ID, "Quick Collect")
+        self._btn_monthly_insights_acc = (AppiumBy.ACCESSIBILITY_ID, "Monthly Insights")
 
     def loc_group_name(self, group_name: str) -> tuple[str, str]:
         """Header group name."""
@@ -71,3 +73,11 @@ class GroupDetailPo(BasePage):
 
     def loc_amount_due(self) -> tuple[str, str]:
         return self._lbl_amount_due_uia
+
+    def loc_quick_collect(self) -> tuple[str, str]:
+        """Quick Collect entry point on group detail."""
+        return self._btn_quick_collect_acc
+
+    def loc_monthly_insights(self) -> tuple[str, str]:
+        """Monthly Insights entry point on group detail."""
+        return self._btn_monthly_insights_acc

@@ -36,6 +36,9 @@ docs/locators/*.xml
 # Product source used as local flow context (do not push into automation repo)
 builds/cofee-app-develop/
 
+# App source dropped in for gather-mobile-context (app team's code, not ours)
+reference/
+
 # IDE
 .idea/
 .vscode/
@@ -44,3 +47,6 @@ builds/cofee-app-develop/
 
 # Allure
 allure-report/
+
+# Claude Code runtime state (not project code — .claude/skills/ symlinks ARE tracked)
+.claude/scheduled_tasks.lock
