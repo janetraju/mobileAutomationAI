@@ -24,6 +24,10 @@ cp .env.example .env
 cp .env.dev.example .env.dev
 cp environment/dev.properties.example environment/dev.properties
 
+# 2b. Appium MCP (for AI-assisted testing via .mcp.json)
+# export ANDROID_HOME to your local Android SDK path — .mcp.json reads it via ${ANDROID_HOME}
+export ANDROID_HOME=/path/to/your/Android/Sdk
+
 # 3. Install
 python -m venv .venv && source .venv/bin/activate
 invoke install

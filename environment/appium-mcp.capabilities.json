@@ -1,0 +1,12 @@
+{
+  "android": {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:deviceName": "emulator-5554",
+    "appium:appPackage": "cofee.life.app.dev",
+    "appium:appActivity": "cofee.life.app.MainActivity",
+    "appium:autoGrantPermissions": true,
+    "appium:noReset": false,
+    "appium:newCommandTimeout": 120
+  }
+}
