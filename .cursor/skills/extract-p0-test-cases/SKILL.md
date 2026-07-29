@@ -25,24 +25,19 @@ view of the same output, not a separate mode.
 
 Use paths with your configured `<app_slug>` (current app: `cofee`):
 
-1. **`AGENTS.md`** — conventions, layer rules
+1. **`AGENTS.md`** — Repo contract (do not restate here)
 2. **`docs/context/<app_slug>-<feature-slug>-context.md`** (from
-   `get-context`, if it exists) — **preferred input**: screens in
-   scope, flow, business rules/AC, elements (🟡 hypotheses), existing
-   automation coverage, open questions
+   `get-context`, if it exists) — **preferred input**
 3. **Fallback**, only if no context file exists yet: `docs/<app_slug>-flow.md`
-   (or `docs/cofee-flow.md`) + whatever fed it this session —
-   `docs/assets/` (screenshots, Figma exports) **and/or** a product/source
-   repo the user shared (screens, routes, validation)
+   + screenshots / Figma / product repo from this session
 4. **`.env.example`**, **`data/<app_slug>/`**
-5. **`tests/test/<app_slug>/`** — existing coverage (even `fixme`/skipped) — reference, don't duplicate
+5. **`tests/test/<app_slug>/`** — existing coverage — reference, don't duplicate
 6. **`src/page_objects/<app_slug>/`** — implemented screens
 
 If neither a context file nor a flow doc section covers the requested
-feature, mark it **"Not in docs — confirm with user"** — or, if a product
-repo is available this session, run `author-mobile-flow-docs` first (or
-extract candidates and mark them **Unconfirmed** until the flow doc is
-updated). Never invent flows, steps, or element labels.
+feature, mark it **"Not in docs — confirm with user"** — or run
+`author-mobile-flow-docs` first. Never invent flows, steps, or element labels.
+Locators are out of scope here (AGENTS.md + `discover-mobile-locators`).
 
 ---
 
