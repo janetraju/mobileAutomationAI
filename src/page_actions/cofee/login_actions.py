@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import subprocess
+import time
 from contextlib import suppress
 
 from appium.webdriver.webdriver import WebDriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
 from src.core.page_actions import PageActions
 from src.core.settings import get_settings
@@ -26,6 +27,23 @@ class LoginActions(PageActions):
             allow = self._wait(5).until(lambda _: self._login_po.find_permission_allow_button())
             self.tap(allow)
             self.wait_for_element_gone(self._login_po.loc_permission_allow(), timeout=3)
+        except TimeoutException:
+            pass
+
+    def dismiss_phone_hint_sheet_if_visible(self) -> None:
+        """Dismiss the Google Play Services phone-number-hint bottom sheet if shown.
+
+        This is a separate system window (com.google.android.gms) that appears
+        automatically the instant the phone EditText gains focus, fully covering
+        the screen including wherever "Next" would render. Left unhandled, waits
+        for `loc_btn_next` time out with no useful error.
+        """
+        try:
+            cancel = self._wait(3).until(
+                lambda _: self._login_po.find_gms_phone_hint_cancel()
+            )
+            self.tap(cancel)
+            self.wait_for_element_gone(self._login_po.loc_gms_phone_hint_cancel(), timeout=3)
         except TimeoutException:
             pass
 
@@ -101,15 +119,69 @@ class LoginActions(PageActions):
             return False
 
     def enter_phone_number(self, mobile: str) -> None:
-        """Enter mobile number with digit-by-digit input (reliable on Flutter)."""
+        """Enter mobile number with digit-by-digit input (reliable on Flutter).
+
+        Deliberately does not call `hide_keyboard()`: on this build the
+        driver's hideKeyboard command falls back to a BACK press even when
+        `is_keyboard_shown()` reports true, and BACK exits the app entirely
+        from this root screen (no back stack). "Next" is fully visible and
+        tappable with the keyboard still up, so hiding it isn't needed.
+        """
         field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=10)
         self.tap(field)
-        field.clear()
-        # Flutter rebuilds EditText after clear — re-query before each keystroke
-        for digit in mobile:
+        self.dismiss_phone_hint_sheet_if_visible()
+        self._type_digits_with_verification(mobile)
+
+    def _type_digits_with_verification(self, value: str, whole_entry_retries: int = 3) -> None:
+        """Type a digit string, verifying the final result and retrying the whole entry on mismatch.
+
+        Per-digit retry (`_send_digit_verified`) handles most dropped
+        keystrokes, but on this build a stale/miscounted read can still let a
+        digit slip through silently (confirmed by comparing the final result
+        against the intended value, not just incremental length). Comparing
+        the full digit-only result against ground truth and retyping from
+        scratch on mismatch is more robust than trusting any single
+        incremental heuristic.
+        """
+        for _ in range(whole_entry_retries):
             field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=5)
-            field.send_keys(digit)
-        self.hide_keyboard()
+            field.clear()
+            for i, digit in enumerate(value, start=1):
+                self._send_digit_verified(digit, expected_length=i)
+            actual = "".join(c for c in self._read_text_safe() if c.isdigit())
+            if actual == value:
+                return
+
+    def _read_text_safe(self, retries: int = 3) -> str:
+        """Read the shared input field's text, refetching on stale-element races."""
+        for _ in range(retries):
+            field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=5)
+            try:
+                return self.get_text(field)
+            except StaleElementReferenceException:
+                continue
+        return ""
+
+    def _send_digit_verified(self, digit: str, expected_length: int, retries: int = 4) -> None:
+        """Send one digit into the shared input field, retrying on dropped keystrokes.
+
+        Uses `adb shell input text` rather than Appium's `send_keys()`: on
+        this Flutter EditText, `send_keys()` intermittently drops keystrokes
+        or even truncates already-entered characters under device load (
+        confirmed by direct comparison — the same sequence typed via adb was
+        100% reliable). Still verify + retry as a safety net.
+
+        Counts digits only, not raw text length: the phone field auto-inserts
+        a formatting space after 5 digits (e.g. "63210 20200"), which would
+        otherwise inflate the length and make this return one digit early,
+        silently dropping the next real digit.
+        """
+        for _ in range(retries):
+            digit_count = sum(c.isdigit() for c in self._read_text_safe())
+            if digit_count >= expected_length:
+                return
+            subprocess.run(["adb", "shell", "input", "text", digit], check=False, capture_output=True)
+            time.sleep(0.15)
 
     def _tap_primary_cta(self, element) -> None:
         """Tap left-center of bottom CTA — right side overlaps the debug FAB."""
@@ -125,18 +197,19 @@ class LoginActions(PageActions):
 
     def submit_phone_number(self) -> None:
         """Tap Next to request OTP (avoid debug FAB on the right)."""
+        self.dismiss_phone_hint_sheet_if_visible()
         next_btn = self.wait_for_element_visible(self._login_po.loc_btn_next(), timeout=12)
         self._tap_primary_cta(next_btn)
 
     def enter_otp(self, otp: str) -> None:
-        """Enter OTP code on the verification screen."""
+        """Enter OTP code on the verification screen.
+
+        See `enter_phone_number` — `hide_keyboard()` is intentionally omitted
+        for the same reason (BACK-press fallback exits the app on this build).
+        """
         field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=10)
         self.tap(field)
-        field.clear()
-        for digit in otp:
-            field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=5)
-            field.send_keys(digit)
-        self.hide_keyboard()
+        self._type_digits_with_verification(otp)
 
     def submit_otp(self) -> None:
         """Tap Next to verify OTP when still on the OTP screen."""

@@ -138,9 +138,16 @@ class PageActions:
         self.wait_for_element_gone(spinner_locator, timeout=timeout or self._wait_timeout * 2)
 
     def hide_keyboard(self) -> None:
-        """Dismiss the on-screen keyboard if visible."""
+        """Dismiss the on-screen keyboard if visible.
+
+        Guarded on `is_keyboard_shown()` — calling the driver's hideKeyboard
+        command when no keyboard is actually up makes UiAutomator2 fall back
+        to a BACK press, which can exit the app entirely on a screen with no
+        back stack (e.g. the login phone-entry screen).
+        """
         with suppress(Exception):
-            self._driver.hide_keyboard()
+            if self._driver.is_keyboard_shown():
+                self._driver.hide_keyboard()
 
     def get_text(self, element: WebElement) -> str:
         """Get element text."""
