@@ -22,9 +22,9 @@ CoFee Android/iOS app driven through Appium — not a web operator UI.
 this file; it's the discovery record consumed by `extract-p0-test-cases`
 and, downstream, `mobile-appium-python`.
 
-**Repo ground truth:** [AGENTS.md](../../../AGENTS.md) — `APP_TYPE`, layer
-rules, locator priority, which app is currently configured. **Load first**
-to route; don't re-derive what it already documents.
+**Repo ground truth:** [AGENTS.md](../../../AGENTS.md) **Repo contract** —
+stack, layers, locator policy, feature-context vs live dumps. **Load first**;
+don't restate those rules in this skill.
 
 This project has no product registry (no `docs/index.json` equivalent) —
 `docs/<app_slug>-flow.md`, `src/page_objects/<app_slug>/`, and
@@ -40,7 +40,7 @@ This project has no product registry (no `docs/index.json` equivalent) —
 | 2 | **Never fail** because PRD, Figma, or Jira is missing — record `not_available` and move on. Infer, interview, then generate. |
 | 3 | **Infer after intake** — once Phase 2 artifacts are collected, infer from this repo's `docs/<app_slug>-flow.md`, `src/page_objects/<app_slug>/`, `tests/test/<app_slug>/`, `AGENTS.md`, and the app source (`reference/<app_slug>-app-source/`) — then ask only gaps. |
 | 4 | **No hallucination** — label gaps as *Unknown* or *Assumption*; never invent screen copy, element labels, or business rules. |
-| 5 | **Live session outranks everything for locators** — Figma copy and app-source `Semantics(label:...)`/`Key('...')` hits are both *hypotheses* (🟡) until confirmed against a running session's accessibility tree in `discover-mobile-locators`. Design docs and code go stale; the running app doesn't. |
+| 5 | **Live session outranks everything for locators** — per **AGENTS.md**: Figma/app-source hits are *hypotheses* (🟡) until `discover-mobile-locators` confirms them live. |
 | 6 | **Adaptive questions** — the gap-interview question set depends on what Phase 2 actually returned, not a fixed script. |
 | 7 | **Downstream-ready** — output must feed `extract-p0-test-cases` directly, without it re-deriving context you already gathered. |
 | 8 | **Raise MCP failures immediately** — Figma or Jira auth/unavailable → tell the user in chat now, mark `partial`, continue. A user-supplied **Figma screenshot** (no link) is a valid intake choice, not an MCP failure — inspect the image directly instead. |

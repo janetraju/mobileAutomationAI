@@ -11,9 +11,10 @@ disable-model-invocation: true
 
 # Automate a Flow
 
-**Orchestrator** for a full scenario. Layer file patterns live in
-**`mobile-appium-python`** — this skill decides *when* and *in what order*;
-that skill decides *how* each file looks.
+**Orchestrator** for a full scenario.  
+**Repo contract:** [AGENTS.md](../../../AGENTS.md) (layers, locators, waits, markers).  
+Layer file patterns: **`mobile-appium-python`**. This skill decides *when* /
+*in what order*; that skill decides *how* each file looks.
 
 Use when the user gives a **test scenario**, **approved test case**, or
 **"automate this flow"** request.
@@ -21,11 +22,11 @@ Use when the user gives a **test scenario**, **approved test case**, or
 ## Goal
 
 Turn a business scenario into layered automation using **real** locators from
-dumps / Appium MCP — never invented.
+dumps / Appium MCP (per AGENTS.md — never invent selectors).
 
 ## Read first
 
-1. **`AGENTS.md`**
+1. **`AGENTS.md` Repo contract**
 2. **`docs/context/<app_slug>-<feature>-testcases.md`** (if approved) or flow doc P0 row
 3. **`docs/<app_slug>-flow.md`**
 4. Existing POs, actions, steps under `src/` and `tests/test/<app_slug>/`
@@ -162,13 +163,14 @@ Only after this summary → proceed to Step 3.
 
 ## Step 3 — Implement layers
 
-Follow **`mobile-appium-python`** feature add order:
+Follow **`mobile-appium-python`** feature add order (and **AGENTS.md** contract
+for what each layer may contain):
 
 ```text
-src/page_objects/<app_slug>/<screen>_po.py       → # --- Locators ---, find_*, loc_*
-src/page_actions/<app_slug>/<screen>_actions.py  → extends PageActions + PO
-src/steps/<app_slug>/<feature>_steps.py          → user_* functions, @allure.step
-tests/dataprovider/dp_<feature>.py               → get_*_test_data()
+src/page_objects/<app_slug>/<screen>_po.py
+src/page_actions/<app_slug>/<screen>_actions.py
+src/steps/<app_slug>/<feature>_steps.py
+tests/dataprovider/dp_<feature>.py
 tests/test/<app_slug>/<feature>/test_<feature>.py
 ```
 
@@ -177,9 +179,9 @@ tests/test/<app_slug>/<feature>/test_<feature>.py
 ```text
 - [ ] MCP flow walkthrough completed (Step 2d)
 - [ ] Context sources noted (testcases / flow doc / MCP dump)
-- [ ] No invented locators
+- [ ] Locators live-confirmed (AGENTS.md)
 - [ ] Steps before test file
-- [ ] @pytest.mark.e2e + p0/p1/p2 + platform marker
+- [ ] Markers / Allure per AGENTS.md
 ```
 
 ## Step 4 — Verify
@@ -197,7 +199,7 @@ invoke report
 `invoke test` always runs **ruff --fix + black** before pytest. Use
 `invoke lint --no-fix` only when you need a check-only pass.
 
-Re-dump failing screen — do not add `time.sleep()`.
+Re-dump failing screen. Waits/stability: **AGENTS.md** (no `time.sleep()`).
 
 ## Step 5 — On failure: update skills (mandatory)
 
@@ -238,16 +240,14 @@ unplugged device) — not framework or locator knowledge.
 | Multi-screen | One step module; steps call multiple actions |
 | iOS + Android | Same steps; platform POs if tree differs |
 
-## Anti-patterns
+## Anti-patterns (orchestration-specific)
 
-- Adding a new TC or scenario without MCP flow walkthrough (Step 2d)
-- Locators from memory, APK strings, or product source alone
-- Figma label as accessibility id without dump
-- Locators in test files
-- Giant step without `@allure.step` breakdown
-- `time.sleep()` for timing
+Repo-wide anti-patterns (sleeps, invented locators, layer violations) → **AGENTS.md**.
+
+- Adding a new TC without MCP flow walkthrough (Step 2d)
 - Authoring downstream tests (groups, payments) before login P0 passes
 - Fixing code without updating the relevant skill after a failure
+- Skipping Step 0 prereq validation
 
 ## Known pitfalls (CoFee — updated 2026-07-16)
 

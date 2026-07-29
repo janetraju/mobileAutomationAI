@@ -5,33 +5,20 @@ alwaysApply: true
 
 # Mobile Appium Python Rules
 
-Read **`AGENTS.md`** and **`.cursor/skills/mobile-appium-python/SKILL.md`** before authoring tests.
+**Source of truth:** **`AGENTS.md` → Repo contract** (architecture, layers,
+locators, waits, assertions, markers, stability).
 
-## Architecture
+Skills under `.cursor/skills/` are **task workflows only** — they must not
+redefine those rules. Before authoring or reviewing tests, read `AGENTS.md`;
+then open the skill for the specific action (`automate-a-flow`,
+`mobile-appium-python`, `discover-mobile-locators`, etc.).
 
-- Strict imports: `tests → steps → page_actions → page_objects → core`
-- Locators only in `src/page_objects/**/*_po.py` under `# --- Locators ---`
-- No `driver` in tests or steps
-- No page object imports in tests or steps
-- No `page_actions` imports in tests when a step exists for the flow
+## Always enforce (summary — details in AGENTS.md)
 
-## Code quality
-
-- No `time.sleep()` — use explicit waits from `PageActions` / `BasePage`
-- No bare `except:` — use `except Exception:`
-- Imports at module top only
-- No `pytest.skip()` in page actions
-- No secrets in dataproviders — config / encrypted `data/` only
-
-## Tests
-
-- Every UI test: `@pytest.mark.e2e` + priority (`p0`/`p1`/`p2`)
-- Allure: epic, feature, story, severity; attach on failure (conftest handles screenshots)
-- Re-query elements after navigation — no stale `WebElement` caching across screens
-- `@pytest.mark.ignore` excluded from default runs
-
-## App configuration
-
-- `APP_NAME`, `APP_SLUG`, identifiers from `.env` — never hardcode product names
-- Platform branching only in page objects
-- Sync Appium WebDriver API only
+- Import direction: `tests → steps → page_actions → page_objects → core`
+- Locators only in `*_po.py` under `# --- Locators ---`
+- No `driver.find_element` outside page objects; no POs in tests/steps
+- No `time.sleep()` — explicit waits only; re-query after navigation
+- Every UI test: `@pytest.mark.e2e` + priority + Allure labels
+- No secrets in dataproviders; sync WebDriver only
+- Locators confirmed live — never invent from product source alone
