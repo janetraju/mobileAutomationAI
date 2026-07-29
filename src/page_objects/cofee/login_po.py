@@ -25,9 +25,14 @@ class LoginPo(BasePage):
         self._input_phone_class = (AppiumBy.CLASS_NAME, "android.widget.EditText")
         self._btn_next_acc = (AppiumBy.ACCESSIBILITY_ID, "Next")
         self._btn_continue_acc = (AppiumBy.ACCESSIBILITY_ID, "Continue")
+        # descriptionContains("Individual") is case-insensitive on this UiAutomator2
+        # build and false-matches the non-interactive "Welcome test individual!"
+        # header (an android.view.View, appears earlier in the tree) before ever
+        # reaching the real, clickable account row ("test individual\nIndividual",
+        # an android.widget.ImageView). Constrain by class to target the row.
         self._account_individual_uia = (
             AppiumBy.ANDROID_UIAUTOMATOR,
-            'new UiSelector().descriptionContains("Individual")',
+            'new UiSelector().className("android.widget.ImageView").descriptionContains("Individual")',
         )
         self._tab_home_acc = (AppiumBy.ACCESSIBILITY_ID, "Home")
         self._account_welcome_uia = (
@@ -39,7 +44,10 @@ class LoginPo(BasePage):
             'new UiSelector().text("Allow")',
         )
         self._btn_debug_back_acc = (AppiumBy.ACCESSIBILITY_ID, "Back")
-
+        # Google Play Services phone-number-hint bottom sheet — separate
+        # system window (com.google.android.gms), pops up the instant the
+        # phone EditText gains focus and fully covers the "Next" button.
+        self._gms_phone_hint_cancel_id = (AppiumBy.ID, "com.google.android.gms:id/cancel")
 
     def find_phone_title(self):
         """Phone entry screen title."""
@@ -81,6 +89,10 @@ class LoginPo(BasePage):
         """Back control on the dev network-logs overlay."""
         return self._driver.find_element(*self._btn_debug_back_acc)
 
+    def find_gms_phone_hint_cancel(self):
+        """Cancel control on the Google Play Services phone-number-hint sheet."""
+        return self._driver.find_element(*self._gms_phone_hint_cancel_id)
+
     def loc_permission_allow(self) -> tuple[str, str]:
         """Locator tuple for permission Allow button."""
         return self._btn_allow_text
@@ -112,3 +124,7 @@ class LoginPo(BasePage):
     def loc_tab_home(self) -> tuple[str, str]:
         """Locator tuple for home tab wait."""
         return self._tab_home_acc
+
+    def loc_gms_phone_hint_cancel(self) -> tuple[str, str]:
+        """Locator tuple for the Google phone-number-hint sheet Cancel control."""
+        return self._gms_phone_hint_cancel_id
