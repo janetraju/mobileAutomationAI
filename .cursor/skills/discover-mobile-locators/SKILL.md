@@ -18,7 +18,7 @@ prefixes/suffixes, `find_*` / `loc_*`, no invented selectors.
 ## When to use
 
 - Before creating any `*_po.py` file
-- After `onboard-mobile-app`, `get-context`, or `author-mobile-flow-docs`
+- After `get-context` or `author-mobile-flow-docs`
 - After analyzing a product/source repo (code labels/keys are **hypotheses only**)
 - User asks for selectors, Inspector output, or uiautomator dump
 

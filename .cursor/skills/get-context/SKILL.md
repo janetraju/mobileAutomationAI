@@ -1,22 +1,19 @@
 ---
 name: get-context
 description: >-
-  Adaptive feature/screen context discovery for the CoFee mobile app
-  (Flutter + Appium): mandatory intake first (asks what's available — PRD,
-  Figma, Jira, app source) via AskUserQuestion, collects each artifact
-  marked available, then infers from this repo's existing docs/page
-  objects/tests and the app source, asks gap-targeted questions, and
-  writes docs/context/<app_slug>-<feature>-context.md. Never stops on
-  missing docs, but always asks what's available before starting
-  discovery. Use when the user says "get context for <feature>" or
-  "gather context for <feature>".
+  Adaptive feature/screen context discovery for the configured mobile app
+  (Flutter + Appium). If the app is not yet wired into this repo (no APP_SLUG
+  / registry / slug folders), asks for an APK/IPA and bootstraps config first,
+  then runs mandatory intake (PRD, Figma, Jira, app source), discovery, and
+  writes docs/context/<app_slug>-<feature>-context.md. Use when the user says
+  "get context for <feature>", "gather context", or onboards a new product.
 disable-model-invocation: true
 ---
 
-# Get Context (CoFee mobile)
+# Get Context
 
 Behave as an **AI QA Architect** doing feature/screen discovery for the
-CoFee Android/iOS app driven through Appium — not a web operator UI.
+app driven through Appium — not a web operator UI.
 
 **Output:** `docs/context/<app_slug>-<feature-slug>-context.md` — commit
 this file; it's the discovery record consumed by `extract-p0-test-cases`
@@ -36,7 +33,8 @@ This project has no product registry (no `docs/index.json` equivalent) —
 
 | # | Rule |
 |---|------|
-| 1 | **Ask what's available before doing anything else.** Phase 1 Intake runs first, every time, before any grep/read of app source or repo docs. This is the one non-negotiable ordering rule in this skill. |
+| 0 | **App must be configured before feature intake.** If Phase 0 finds the product is not wired, ask for APK/IPA and finish bootstrap before Phase 1. |
+| 1 | **Ask what's available before feature discovery.** Phase 1 Intake runs before any grep/read of app source or feature docs (after Phase 0 if needed). |
 | 2 | **Never fail** because PRD, Figma, or Jira is missing — record `not_available` and move on. Infer, interview, then generate. |
 | 3 | **Infer after intake** — once Phase 2 artifacts are collected, infer from this repo's `docs/<app_slug>-flow.md`, `src/page_objects/<app_slug>/`, `tests/test/<app_slug>/`, `AGENTS.md`, and the app source (`reference/<app_slug>-app-source/`) — then ask only gaps. |
 | 4 | **No hallucination** — label gaps as *Unknown* or *Assumption*; never invent screen copy, element labels, or business rules. |
@@ -61,7 +59,9 @@ This project has no product registry (no `docs/index.json` equivalent) —
 ## Phase sequence (strict)
 
 ```text
-Phase 1  Intake (AskUserQuestion) — always first
+Phase 0  App bootstrap (only if product not configured) — ask APK/IPA, wire repo
+    ↓
+Phase 1  Intake (AskUserQuestion) — always before feature discovery
     ↓
 Phase 2  Collect artifacts marked "available" (chat, sequential; wait for reply each time)
     ↓
@@ -76,16 +76,63 @@ Phase 6  Gap interview (if needed)
 Phase 7  Write docs/context/<app_slug>-<feature-slug>-context.md   ← only after Phase 2 gate
 ```
 
-**Allowed before Phase 2 finishes:** one-line confirmations.
-**Not allowed before Phase 2 finishes:** Phase 4 onward.
+**Allowed before Phase 2 finishes:** one-line confirmations; Phase 0 config edits.  
+**Not allowed before Phase 2 finishes:** Phase 4 onward (feature discovery / context file).
 
 ---
 
-## Phase 1 — Intake (`AskUserQuestion`, once, always first)
+## Phase 0 — App bootstrap (conditional)
+
+**Skip** when the current product is already configured. Treated as configured if
+**all** of these hold:
+
+- `.env` (or `.env.example` defaults in use) has a real `APP_SLUG` (not empty / not `app_slug`)
+- `APP_SLUG` exists as a key in `src/core/settings.py` → `APP_REGISTRY`
+- Slug folders exist: `src/page_objects/<APP_SLUG>/`, `tests/test/<APP_SLUG>/`
+
+**If not configured** (new product, fresh scaffold, or switching apps):
+
+1. Tell the user the repo is not wired for this app yet.
+2. Ask once: **Please provide the APK or IPA** (path under `builds/`, upload, or drop
+   the file and say `done`). Prefer `builds/<slug>-<env>.apk` (no spaces).
+3. Analyze:
+
+```bash
+invoke app:analyze --apk=builds/<app>.apk
+# or: bash scripts/analyze-apk.sh builds/<app>.apk
+```
+
+4. Record (never commit secrets from a bundled `.env`):
+
+| Field | Source |
+|-------|--------|
+| `APP_NAME` | `application-label` |
+| `APP_SLUG` | lowercase short name (e.g. `cofee`) |
+| `APP_TYPE` | `native` / `flutter` / `rn` / `hybrid` |
+| `APP_PACKAGE` / `BUNDLE_ID` | badging |
+| `APP_ACTIVITY` | launchable activity (Android) |
+| `API_BASE_URL` | bundled config or user — **not** API keys |
+
+5. Update `APP_REGISTRY` in `src/core/settings.py` for that slug.
+6. Rename scaffold folders if still named `app_slug` → `<APP_SLUG>`
+   (`page_objects`, `page_actions`, `steps`, `constants`, `data`, `tests/test`, flow doc).
+7. Update `.env` / `.env.example` (`APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_PATH`, identifiers).
+8. Light-touch `AGENTS.md` title/slug if needed; stub `docs/<app_slug>-flow.md`
+   with hypothesized flows marked **Unconfirmed**.
+
+**Do not** write `*_po.py` locators from the APK alone — live dump comes later.  
+**Then** continue to Phase 1 for the requested feature.
+
+Same-app APK refresh (product already configured): skip Phase 0 — only
+`invoke app:install` if they need a new binary on device.
+
+---
+
+## Phase 1 — Intake (`AskUserQuestion`, once, before feature discovery)
 
 One tool call, all questions together — **do this before reading or
-grepping anything**, including the app source that may already be sitting
-in `reference/<app_slug>-app-source/` from a prior turn:
+grepping feature/app-source artifacts**, including source that may already be
+sitting in `reference/<app_slug>-app-source/` from a prior turn:
 
 | Question | Options |
 |----------|---------|
@@ -242,9 +289,9 @@ this skill never writes to `src/page_objects/`.
 
 ## Rules
 
-- **Always run Phase 1 Intake first** — even if app source is already
-  unpacked from a previous feature, PRD/Figma/Jira availability must be
-  asked fresh for this feature.
+- **Run Phase 0 only when the product is not configured**; otherwise skip to Phase 1.
+- **Always run Phase 1 Intake** before feature discovery — even if app source is
+  already unpacked from a previous feature.
 - Never invent business rules, copy, or element labels not present in
   source/docs/user input — mark **Unknown**.
 - Source-derived and Figma-derived locators are hypotheses only; never let
@@ -252,8 +299,8 @@ this skill never writes to `src/page_objects/`.
   `discover-mobile-locators` first.
 - Don't re-derive what `docs/<app_slug>-flow.md` or existing page
   objects/tests already cover — report it instead.
-- Never commit the unpacked app source (`reference/` is gitignored) or any
-  secrets found inside it.
+- Never commit the unpacked app source (`reference/` is gitignored), APK
+  secrets, or tokens found in binaries.
 - Cap the gap interview at 6 questions per round.
 - A Figma screenshot (no link) is a valid intake choice, not an MCP
   failure — inspect the image directly instead.
@@ -262,6 +309,7 @@ this skill never writes to `src/page_objects/`.
 - Never show mandatory intake twice in one session (unless
   `restart get-context`).
 - Never write the context file before Phase 2 completes.
+- Keep `APP_TYPE` accurate — locator discovery depends on it.
 
 ## Related skills
 

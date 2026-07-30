@@ -211,8 +211,7 @@ above.
 
 | Skill | Role | Output / handoff |
 |-------|------|------------------|
-| `onboard-mobile-app` | New APK/IPA → registry, `.env`, folder rename | Ready for discovery |
-| `get-context` | Preferred feature intake (PRD/Figma/Jira/app source) | `docs/context/<app_slug>-<feature>-context.md` |
+| `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
 | `author-mobile-flow-docs` | Fallback intake → flow doc | `docs/<app_slug>-flow.md` |
 | `extract-p0-test-cases` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
@@ -235,7 +234,7 @@ editing an existing layer or debugging locators/markers.
 ### Pipeline
 
 ```text
-# Preferred
+# Preferred (app already configured, e.g. CoFee)
 get-context
   → extract-p0-test-cases
   → discover-mobile-locators
@@ -246,8 +245,8 @@ get-context
 # Fallback (no get-context this session)
 author-mobile-flow-docs → extract-p0-test-cases → (same from discover onward)
 
-# New app binary only
-onboard-mobile-app → get-context | author-mobile-flow-docs → …
+# New product (not in APP_REGISTRY / slug folders)
+get-context Phase 0 asks for APK/IPA → wires repo → then same preferred pipeline
 ```
 
 ---

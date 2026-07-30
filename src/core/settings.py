@@ -43,7 +43,7 @@ def _load_env_files(app_env: str) -> None:
         load_dotenv(props, override=True)
 
 
-# Per-app registry — onboard-mobile-app skill updates this when adding a new app
+# Per-app registry — get-context Phase 0 updates this when adding a new app
 APP_REGISTRY: dict[str, dict[str, dict[str, dict[str, str]]]] = {
     "cofee": {
         "android": {

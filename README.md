@@ -61,7 +61,7 @@ allure open target/allure-report
 4. Add `docs/<slug>-flow.md` and run locator discovery
 5. Update `AGENTS.md` skill paths if needed
 
-See skill `onboard-mobile-app` for the full checklist.
+See skill `get-context` **Phase 0** (asks for APK/IPA when the app is not configured).
 
 ## Architecture
 
