@@ -212,7 +212,7 @@ above.
 | Skill | Role | Output / handoff |
 |-------|------|------------------|
 | `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
-| `extract-p0-test-cases` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
+| `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
 | `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` | Test data ready |
 | `automate-a-flow` | Orchestrate one approved scenario | Working E2E for one flow |
@@ -235,7 +235,7 @@ editing an existing layer or debugging locators/markers.
 ```text
 # Preferred (app already configured, e.g. CoFee)
 get-context
-  → extract-p0-test-cases
+  → testcase-generator
   → discover-mobile-locators
   → setup-mobile-test-data
   → automate-a-flow

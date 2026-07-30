@@ -1,3 +1,18 @@
+---
+name: testcase-generator
+description: >-
+  Generate structured, device-observable mobile test cases across all
+  priorities (P0/P1/P2) and categories (happy path, negative, edge,
+  permission/OS dialog, state/navigation, accessibility, platform,
+  regression) for any app in this repo. Prefers
+  docs/context/<app_slug>-<feature>-context.md from get-context; falls back
+  to docs/<app_slug>-flow.md (fed by screenshots, Figma, or product-repo
+  analysis) when no context file exists yet. Use when the user asks for
+  P0/smoke cases, test cases for a feature, or "which flows to automate
+  first." Presents a draft in chat and requires approval before writing
+  docs/context/<app_slug>-<feature>-testcases.md.
+disable-model-invocation: true
+---
 # Extract Test Cases
 
 Generate structured, device-observable test cases (P0/P1/P2) from feature documentation.

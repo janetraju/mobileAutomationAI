@@ -1,30 +1,35 @@
 # Get Context
 
-Collect feature context from available product artifacts and generate a single discovery document for downstream test design and automation.
+Collect feature context from available product artifacts and generate a discovery document for downstream test design and automation.
 
-**Output**
-
-```
-docs/context/<app_slug>-<feature-slug>-context.md
-```
-
-This skill gathers feature context only. Repository conventions (Page Objects, locators, waits, etc.) are defined in `AGENTS.md`.
-
----
+Repository conventions (Page Objects, locators, waits, coding standards, etc.) are defined in `AGENTS.md`. This skill focuses only on feature discovery and context generation.
 
 ## When to Use
 
 Use this skill when:
 
-- A user asks to gather context for a feature
-- Starting feature analysis before writing test cases
-- Onboarding a new application (bootstrap)
+- Gathering context for a new feature
+- Starting feature analysis before test case generation
+- Onboarding a new application
+- Refreshing context after feature or requirement changes
 
----
+## Output
 
-## Inputs
+Generate:
 
-Possible sources:
+```text
+docs/context/<app_slug>-<feature-slug>-context.md
+```
+
+Commit this file. It serves as the discovery record for:
+
+- `testcase-generator`
+- `discover-mobile-locators`
+- `mobile-appium-python`
+
+## Supported Sources
+
+This skill can use any combination of:
 
 - PRD
 - Figma
@@ -32,7 +37,7 @@ Possible sources:
 - Application source
 - Existing flow documentation
 
-Missing artifacts are acceptable. Record what is unavailable and continue.
+Missing artifacts are acceptable. Record unavailable sources and continue.
 
 ---
 
@@ -40,18 +45,18 @@ Missing artifacts are acceptable. Record what is unavailable and continue.
 
 ## Step 0 — Bootstrap the Application *(if required)*
 
-Skip if the application is already configured.
+Skip this step if the application is already configured.
 
 An application is considered configured when:
 
 - `APP_SLUG` exists in `.env`
-- The application exists in `APP_REGISTRY`
+- The application is registered in `APP_REGISTRY`
 - Project folders already exist
 
 Otherwise:
 
-1. Obtain the APK or IPA
-2. Analyze the application
+1. Obtain the APK or IPA.
+2. Analyze the application.
 
 ```bash
 invoke app:analyze --apk=builds/<app>.apk
@@ -64,23 +69,23 @@ invoke app:analyze --apk=builds/<app>.apk
 - Project folders
 - `docs/<app_slug>-flow.md`
 
-Mark all generated flows as **Unconfirmed**.
+Mark generated flows as **Unconfirmed**.
 
-Do not derive Page Objects or locators from APK analysis.
+Do **not** derive Page Objects or locators from APK analysis.
 
 ---
 
 ## Step 1 — Collect Inputs
 
-Ask the user for the following once per session.
+Collect the following information once per session.
 
 | Item | Options |
 |------|---------|
 | Change Type | New Screen / Flow, Enhancement, Bug Fix, Locator Hardening |
 | PRD | Upload, Link, Not Available |
-| Figma | Upload, Link, Not Available |
+| Figma | Upload, Link, Screenshot, Not Available |
 | Jira | Link, Key, Upload, Not Available |
-| App Source | Existing Repository, Upload, Not Available |
+| Application Source | Existing Repository, Upload, Not Available |
 
 Record each source as:
 
@@ -92,16 +97,16 @@ Record each source as:
 
 ## Step 2 — Gather Artifacts
 
-Process sources in this order:
+Collect artifacts in the following order:
 
 1. PRD
 2. Figma
 3. Jira
 4. Application Source
 
-Wait until every available source has been collected or explicitly skipped.
+Wait until every available artifact has been collected or explicitly skipped.
 
-For image-only Figma exports, inspect the screenshots directly.
+For Figma screenshots without a link, inspect the image directly.
 
 ---
 
@@ -109,40 +114,39 @@ For image-only Figma exports, inspect the screenshots directly.
 
 Determine the feature slug.
 
-Search:
+Review:
 
-- Current repository
 - Application source
-- Existing flow documents
+- Existing flow documentation
 - Existing Page Objects
 - Existing tests
 
-Treat all code-derived UI elements as **hypotheses** until verified by `discover-mobile-locators`.
+Treat all implementation-derived UI elements as **hypotheses** until verified by `discover-mobile-locators`.
 
 ---
 
 ## Step 4 — Analyze Artifacts
 
-Use available integrations where appropriate.
+Analyze each available source.
 
 | Source | Activity |
 |---------|----------|
 | PRD | Extract requirements and acceptance criteria |
-| Figma | Inspect design, screenshots, metadata |
-| Jira | Collect acceptance criteria and linked issues |
-| Source Code | Identify implementation hints |
+| Figma | Inspect design, screenshots, and metadata |
+| Jira | Extract acceptance criteria and linked issues |
+| Application Source | Identify implementation hints |
 
 If an integration fails:
 
-- Notify the user
-- Mark the source as **Partial**
-- Continue
+- Notify the user immediately.
+- Mark the source as **Partial**.
+- Continue with the remaining sources.
 
 ---
 
 ## Step 5 — Resolve Gaps
 
-Ask only the questions needed to complete missing information.
+Ask targeted follow-up questions only when required.
 
 Focus on:
 
@@ -154,11 +158,11 @@ Limit follow-up questions to **3–6**.
 
 ---
 
-## Step 6 — Generate Context Document
+## Step 6 — Generate the Context Document
 
 Create:
 
-```
+```text
 docs/context/<app_slug>-<feature-slug>-context.md
 ```
 
@@ -166,21 +170,21 @@ Include:
 
 | Section | Description |
 |---------|-------------|
-| Feature | Name, slug, source artifacts |
+| Feature | Name, slug, and source artifacts |
 | Artifact Status | Available / Partial / Missing |
-| Screens | Scope and purpose |
+| Screens in Scope | Purpose of each screen |
 | Happy Path | Screen-to-screen flow |
-| Screen Elements | Candidate UI elements (hypotheses only) |
-| Business Rules | Acceptance criteria and requirements |
-| Edge Cases | Known or Unknown |
-| Regression Areas | Existing bugs or affected areas |
-| Existing Automation | Current tests and Page Objects |
+| Screen Elements | Candidate UI elements *(hypotheses only)* |
+| Business Rules | Requirements and acceptance criteria |
+| Edge Cases | Known scenarios or **Unknown** |
+| Regression Areas | Existing bugs and impacted areas |
+| Existing Automation | Current Page Objects and tests |
 | Open Questions | Remaining gaps |
 
 Use:
 
-- **Unknown** when information is unavailable
-- **Assumption** when inferred
+- **Unknown** when information is unavailable.
+- **Assumption** when information is inferred.
 
 ---
 
@@ -191,7 +195,7 @@ Recommended workflow:
 ```text
 get-context
       ↓
-extract-p0-test-cases
+testcase-generator
       ↓
 discover-mobile-locators
       ↓
@@ -202,25 +206,39 @@ automate-a-flow
 mobile-appium-python
 ```
 
-All locator hypotheses must be confirmed during `discover-mobile-locators`.
+All locator hypotheses must be validated in `discover-mobile-locators`.
+
+---
+
+## Operating Principles
+
+- Complete application bootstrap before feature intake.
+- Collect all available artifacts before generating context.
+- Missing PRD, Figma, or Jira should not block progress.
+- Infer information only after artifact collection.
+- Treat implementation-derived locators as hypotheses until verified.
+- Adapt follow-up questions based on available information.
+- Surface integration failures immediately while continuing where possible.
+- Generate a context document that downstream skills can consume without re-discovering the feature.
 
 ---
 
 ## Rules
 
-- Read feature inputs before searching the implementation.
-- Never fail because an artifact is missing.
-- Never invent business rules or UI text.
+- Never invent business rules, UI text, or acceptance criteria.
 - Never generate Page Objects or locators.
-- Never write the context document until artifact collection is complete.
+- Never write the context document before artifact collection is complete.
 - Ask the intake questions only once per session unless the user requests a restart.
 - Never commit application source or APK files.
+- Reference `AGENTS.md` for repository-wide conventions.
 
 ---
 
 ## Related Skills
 
-- `extract-p0-test-cases`
+- `testcase-generator`
 - `discover-mobile-locators`
+- `setup-mobile-test-data`
 - `automate-a-flow`
 - `mobile-appium-python`
+- `AGENTS.md`
