@@ -1,4 +1,4 @@
-# Mobile Appium Python
+# Testscript Generator
 
 Implement and maintain the mobile automation framework by authoring Page Objects, Actions, Steps, Data Providers, and Tests.
 

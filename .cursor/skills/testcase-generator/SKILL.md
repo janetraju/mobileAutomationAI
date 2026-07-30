@@ -140,7 +140,7 @@ discover-mobile-locators
         ↓
 automate-a-flow
         ↓
-mobile-appium-python
+testscript-generator
 ```
 
 Optionally offer to update the feature's priority matrix in the flow document.
@@ -159,5 +159,5 @@ Optionally offer to update the feature's priority matrix in the flow document.
 - `get-context`
 - `discover-mobile-locators`
 - `automate-a-flow`
-- `mobile-appium-python`
+- `testscript-generator`
 - `testcase-template.md`

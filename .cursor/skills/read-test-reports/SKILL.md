@@ -60,8 +60,8 @@ Attachments come from `conftest.py` on failure — no per-test screenshot code n
 | ---------------- | ------ |
 | Report / attachment gaps | This skill |
 | Locator timeout | `discover-mobile-locators` |
-| Login / session / emulator | `automate-a-flow`, `mobile-appium-python` |
-| Layer import violation | `pr-review-changes`, `mobile-appium-python` |
+| Login / session / emulator | `automate-a-flow`, `testscript-generator` |
+| Layer import violation | `pr-review-changes`, `testscript-generator` |
 
 See **`automate-a-flow`** Step 6 for the full update-skills policy.
 
@@ -88,6 +88,6 @@ Skip only for one-off environment issues (e.g. device unplugged).
 ## Related Skills
 
 - `automate-a-flow`
-- `mobile-appium-python`
+- `testscript-generator`
 - `discover-mobile-locators`
 - `pr-review-changes`

@@ -80,9 +80,9 @@ their variant data table.
 ## Open questions
 
 Anything still unresolved that `discover-mobile-locators` or
-`mobile-appium-python` should address.
+`testscript-generator` should address.
 
 ## Handoff
 
 Next: `discover-mobile-locators` (for any outstanding 🟡 hypotheses), then
-**`mobile-appium-python`** to implement.
+**`testscript-generator`** to implement.

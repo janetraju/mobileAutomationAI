@@ -25,7 +25,7 @@ Commit this file. It serves as the discovery record for:
 
 - `testcase-generator`
 - `discover-mobile-locators`
-- `mobile-appium-python`
+- `testscript-generator`
 
 ## Supported Sources
 
@@ -208,7 +208,7 @@ discover-mobile-locators
       ↓
 automate-a-flow          (test data source decided in its Step 1)
       ↓
-mobile-appium-python
+testscript-generator
 ```
 
 All locator hypotheses must be validated in `discover-mobile-locators`.
@@ -244,5 +244,5 @@ All locator hypotheses must be validated in `discover-mobile-locators`.
 - `testcase-generator`
 - `discover-mobile-locators`
 - `automate-a-flow`
-- `mobile-appium-python`
+- `testscript-generator`
 - `AGENTS.md`

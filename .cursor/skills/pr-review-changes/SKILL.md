@@ -80,5 +80,5 @@ Reference the **AGENTS.md** section for each finding.
 ## Related Skills
 
 - `author-pr-description`
-- `mobile-appium-python`
+- `testscript-generator`
 - `automate-a-flow`

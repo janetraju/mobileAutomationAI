@@ -155,7 +155,7 @@ Before handing off, provide:
 
 Once the locator sheet is complete, hand off to:
 
-- `mobile-appium-python`, or
+- `testscript-generator`, or
 - `automate-a-flow`
 
 ## Rules
@@ -170,4 +170,4 @@ Once the locator sheet is complete, hand off to:
 
 - `automate-a-flow`
 - `get-context`
-- `mobile-appium-python`
+- `testscript-generator`

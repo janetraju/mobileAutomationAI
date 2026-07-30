@@ -2,7 +2,7 @@
 
 Orchestrate an approved test scenario into end-to-end mobile automation.
 
-This skill coordinates the automation workflow. It validates prerequisites, ensures the feature is verified on a running device, and hands implementation to `mobile-appium-python`.
+This skill coordinates the automation workflow. It validates prerequisites, ensures the feature is verified on a running device, and hands implementation to `testscript-generator`.
 
 Repository conventions (architecture, locators, waits, coding standards, etc.) are defined in `AGENTS.md`.
 
@@ -14,7 +14,7 @@ Use this skill when:
 - An approved test case exists
 - Starting a new end-to-end automation scenario
 
-> For changes limited to Page Objects, Actions, Steps, or Tests, use `mobile-appium-python`.
+> For changes limited to Page Objects, Actions, Steps, or Tests, use `testscript-generator`.
 
 ## Prerequisites
 
@@ -105,7 +105,7 @@ Do not begin implementation until the live walkthrough is complete.
 Hand off implementation to:
 
 ```text
-mobile-appium-python
+testscript-generator
 ```
 
 Standard implementation order:
@@ -205,7 +205,7 @@ docs/<app_slug>-flow.md
 ```text
 automate-a-flow
       ↓
-mobile-appium-python
+testscript-generator
       ↓
 read-test-reports
       ↓
@@ -219,7 +219,7 @@ author-pr-description
 - `get-context`
 - `testcase-generator`
 - `discover-mobile-locators`
-- `mobile-appium-python`
+- `testscript-generator`
 - `read-test-reports`
 - `author-pr-description`
 - `pr-review-changes`

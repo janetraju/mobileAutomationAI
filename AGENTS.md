@@ -9,7 +9,7 @@ framework configured for **CoFee** (`APP_SLUG=cofee`).
 |----------|------|
 | **`AGENTS.md` (this file)** | Always-on **repo contract** — architecture, layers, locators, waits, assertions, stability, markers |
 | **`.cursor/skills/*/SKILL.md`** | **Task workflows only** — how to perform one action (intake, dump, automate, review) |
-| **`.cursor/rules/mobile-appium-python.mdc`** | Short always-apply pointer to this contract |
+| **`.cursor/rules/testscript-generator.mdc`** | Short always-apply pointer to this contract |
 
 Skills must **not** restate layer rules, locator priority, wait policy, or markers.
 They should say: *follow `AGENTS.md` Repo contract*, then describe their own steps.
@@ -233,10 +233,10 @@ above.
 | `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
 | `automate-a-flow` | Orchestrate one approved scenario (test data source decided in its Step 1) | Working E2E for one flow |
-| `mobile-appium-python` | Write/edit layer files; flaky fixes | Layered automation files |
+| `testscript-generator` | Write/edit layer files; flaky fixes | Layered automation files |
 
-`automate-a-flow` = orchestration. `mobile-appium-python` = layer authoring.
-Prefer `automate-a-flow` for “automate this”; use `mobile-appium-python` when
+`automate-a-flow` = orchestration. `testscript-generator` = layer authoring.
+Prefer `automate-a-flow` for “automate this”; use `testscript-generator` when
 editing an existing layer or debugging locators/markers.
 
 ### Supporting (any time)
@@ -255,7 +255,7 @@ get-context
   → testcase-generator
   → discover-mobile-locators
   → automate-a-flow
-  → mobile-appium-python
+  → testscript-generator
 
 # New product (not in APP_REGISTRY / slug folders)
 get-context Phase 0 asks for APK/IPA → wires repo → then same preferred pipeline
@@ -287,7 +287,7 @@ Design copy only — confirm locators via live dump. See **`get-context`**.
 ## Adding a feature (code order)
 
 Use **`automate-a-flow`** for the full workflow. File order (patterns in
-`mobile-appium-python`):
+`testscript-generator`):
 
 1. `src/page_objects/cofee/<screen>_po.py`
 2. `src/page_actions/cofee/<screen>_actions.py`

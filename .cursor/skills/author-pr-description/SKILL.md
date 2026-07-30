@@ -152,6 +152,6 @@ Return the PR URL after completion.
 ## Related Skills
 
 - `pr-review-changes`
-- `mobile-appium-python`
+- `testscript-generator`
 - `read-test-reports`
 - `automate-a-flow`
