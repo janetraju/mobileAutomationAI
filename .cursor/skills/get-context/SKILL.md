@@ -86,12 +86,19 @@ Collect the following information once per session.
 | Figma | Upload, Link, Screenshot, Not Available |
 | Jira | Link, Key, Upload, Not Available |
 | Application Source | Existing Repository, Upload, Not Available |
+| Credentials | Provide test phone/OTP now, Take from `.env`, Not set up yet |
 
 Record each source as:
 
 - Available
 - Partial
 - Not Available
+
+**Credentials** answered here isn't used by this skill directly — it's
+recorded for `automate-a-flow`'s Step 1 login check. OTP strategy reference
+and the security rules live in `AGENTS.md` → Test data & credentials, not
+here. "Not set up yet" is a valid answer — this skill never blocks on it,
+same as PRD/Figma/Jira.
 
 ---
 
@@ -199,9 +206,7 @@ testcase-generator
       ↓
 discover-mobile-locators
       ↓
-setup-mobile-test-data
-      ↓
-automate-a-flow
+automate-a-flow          (test data source decided in its Step 1)
       ↓
 mobile-appium-python
 ```
@@ -238,7 +243,6 @@ All locator hypotheses must be validated in `discover-mobile-locators`.
 
 - `testcase-generator`
 - `discover-mobile-locators`
-- `setup-mobile-test-data`
 - `automate-a-flow`
 - `mobile-appium-python`
 - `AGENTS.md`

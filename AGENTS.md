@@ -178,6 +178,23 @@ Every UI test:
 - No hardcoded credentials or product names — `.env` / `get_settings()` / `APP_NAME`
 - Lint: `invoke lint` / `invoke test` auto-fix (ruff + black); do not leave formatting for humans
 
+### Test data & credentials
+
+**OTP strategy** — pick one per app, document the choice in
+`docs/<app_slug>-flow.md` → Known blockers / Test data:
+
+| Strategy | Implementation |
+|----------|----------------|
+| Fixed OTP in dev | Set `TEST_OTP` in `.env.dev` (never commit) |
+| API inject | `generate_otp()` (`src/core/api_client.py`), then read from a test mail/SMS hook or debug endpoint |
+| Manual | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
+| Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
+
+- Credentials live in `.env`/`.env.<env>` only — never in a committed context/flow doc, dataprovider, PO, or step
+- No production credentials — dev/stg/uat only
+- Fail fast if `TEST_MOBILE` is missing when login tests are collected
+- Backend/SQL assertions: keep queries in `data/<app_slug>/` scripts — never in page layers
+
 ### Feature context vs automation
 
 | Input | Role |
@@ -194,8 +211,9 @@ Do not invent flows or selectors not documented **or** inspected on device.
 
 `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_ENV`, `PLATFORM`, `APPIUM_HOST`,
 `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
-`API_BASE_URL`, `TEST_MOBILE`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`,
-`NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
+`API_BASE_URL`, `API_AUTH_TOKEN`, `TEST_MOBILE`, `DEFAULT_USERNAME`,
+`DEFAULT_PASSWORD`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`,
+`FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
 
 ---
 
@@ -214,8 +232,7 @@ above.
 | `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
 | `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
-| `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` | Test data ready |
-| `automate-a-flow` | Orchestrate one approved scenario | Working E2E for one flow |
+| `automate-a-flow` | Orchestrate one approved scenario (test data source decided in its Step 1) | Working E2E for one flow |
 | `mobile-appium-python` | Write/edit layer files; flaky fixes | Layered automation files |
 
 `automate-a-flow` = orchestration. `mobile-appium-python` = layer authoring.
@@ -237,7 +254,6 @@ editing an existing layer or debugging locators/markers.
 get-context
   → testcase-generator
   → discover-mobile-locators
-  → setup-mobile-test-data
   → automate-a-flow
   → mobile-appium-python
 

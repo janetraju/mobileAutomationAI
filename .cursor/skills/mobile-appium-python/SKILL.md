@@ -70,6 +70,28 @@ Tests
 
 Layer boundaries and import rules are defined in `AGENTS.md`.
 
+**Test data & OTP in dataproviders** — strategy table and security rules
+live in `AGENTS.md` → Test data & credentials; don't restate them here.
+Usage in a dataprovider/fixture:
+
+```python
+from src.core.api_client import generate_otp, validate_otp, ApiClient
+generate_otp("+919876543210")
+```
+
+Non-secret structured fixtures go under `data/<app_slug>/`:
+
+```
+data/<app_slug>/
+  users.example.json      # structure only, committed
+  users.json               # gitignored if it contains real data
+  org_setup.example.json
+```
+
+Encrypt at rest if secrets must live in the repo; decrypt via an env key
+(document in README). Never hardcode a phone/OTP/token in the dataprovider
+itself — pull from env or `data/<app_slug>/`.
+
 ---
 
 ### Step 3 — Validate on Device
@@ -153,6 +175,5 @@ Depending on the workflow:
 
 - `automate-a-flow`
 - `discover-mobile-locators`
-- `setup-mobile-test-data`
 - `read-test-reports`
 - `pr-review-changes`

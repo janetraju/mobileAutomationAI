@@ -61,7 +61,8 @@ Confirm:
 - Emulator or physical device is available
 - Application is installed
 - Login automation passes
-- Test credentials are configured
+- Test credentials are configured — see `AGENTS.md` → Test data & credentials
+  for OTP strategy; availability was recorded in `get-context`'s intake
 
 Run login automation first whenever the feature depends on an authenticated session.
 
@@ -218,7 +219,6 @@ author-pr-description
 - `get-context`
 - `testcase-generator`
 - `discover-mobile-locators`
-- `setup-mobile-test-data`
 - `mobile-appium-python`
 - `read-test-reports`
 - `author-pr-description`
