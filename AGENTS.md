@@ -258,7 +258,7 @@ onboard-mobile-app → get-context | author-mobile-flow-docs → …
 
 | File | Purpose |
 |------|---------|
-| `.cursor/mcp.json` | Cursor MCP server (`npx appium-mcp@latest`) |
+| `.mcp.json` | Cursor MCP server (`npx appium-mcp@…`) |
 | `environment/appium-mcp.capabilities.json` | Caps — keep aligned with `.env` |
 
 **Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.  
