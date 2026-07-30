@@ -1,5 +1,5 @@
 ---
-name: extract-p0-test-cases
+name: testcase-generator
 description: >-
   Generate structured, device-observable mobile test cases across all
   priorities (P0/P1/P2) and categories (happy path, negative, edge,

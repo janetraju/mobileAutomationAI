@@ -16,7 +16,7 @@ Behave as an **AI QA Architect** doing feature/screen discovery for the
 app driven through Appium — not a web operator UI.
 
 **Output:** `docs/context/<app_slug>-<feature-slug>-context.md` — commit
-this file; it's the discovery record consumed by `extract-p0-test-cases`
+this file; it's the discovery record consumed by `testcase-generator`
 and, downstream, `mobile-appium-python`.
 
 **Repo ground truth:** [AGENTS.md](../../../AGENTS.md) **Repo contract** —
@@ -40,7 +40,7 @@ This project has no product registry (no `docs/index.json` equivalent) —
 | 4 | **No hallucination** — label gaps as *Unknown* or *Assumption*; never invent screen copy, element labels, or business rules. |
 | 5 | **Live session outranks everything for locators** — per **AGENTS.md**: Figma/app-source hits are *hypotheses* (🟡) until `discover-mobile-locators` confirms them live. |
 | 6 | **Adaptive questions** — the gap-interview question set depends on what Phase 2 actually returned, not a fixed script. |
-| 7 | **Downstream-ready** — output must feed `extract-p0-test-cases` directly, without it re-deriving context you already gathered. |
+| 7 | **Downstream-ready** — output must feed `testcase-generator` directly, without it re-deriving context you already gathered. |
 | 8 | **Raise MCP failures immediately** — Figma or Jira auth/unavailable → tell the user in chat now, mark `partial`, continue. A user-supplied **Figma screenshot** (no link) is a valid intake choice, not an MCP failure — inspect the image directly instead. |
 | 9 | **Phase 2 before Phase 7** — finish collecting every intake artifact marked **available** before writing the context file. High code confidence does not skip this gate. |
 
@@ -271,7 +271,7 @@ dialogs.
 
 ```text
 get-context
-  → extract-p0-test-cases
+  → testcase-generator
   → discover-mobile-locators   # live dump / Appium MCP
   → setup-mobile-test-data
   → automate-a-flow            # MCP walkthrough before code
@@ -311,5 +311,5 @@ this skill never writes to `src/page_objects/`.
 
 ## Related skills
 
-`extract-p0-test-cases` · `discover-mobile-locators` · `automate-a-flow` ·
+`testcase-generator` · `discover-mobile-locators` · `automate-a-flow` ·
 `mobile-appium-python` · [AGENTS.md](../../../AGENTS.md)

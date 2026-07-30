@@ -189,6 +189,6 @@ assertions) live in `docs/<app_slug>-flow.md`'s Known Blockers, not here.
 
 ## Related skills
 
-`get-context` · `extract-p0-test-cases` · `discover-mobile-locators` ·
+`get-context` · `testcase-generator` · `discover-mobile-locators` ·
 `setup-mobile-test-data` · `mobile-appium-python` · `read-test-reports` ·
 `pr-review-changes` · [AGENTS.md](../../../AGENTS.md)
