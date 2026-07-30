@@ -1,106 +1,173 @@
----
-name: discover-mobile-locators
-description: >-
-  Discover real mobile UI locators by installing the app on a device or emulator
-  and capturing accessibility trees. Use before writing page objects, when
-  onboarding a new app, after UI changes, or when APK/source analysis is
-  insufficient. Locator priority and naming live in AGENTS.md — this skill is
-  the dump/MCP workflow only.
-disable-model-invocation: true
----
+# Capture UI Locators
 
-# Discover Mobile Locators
+Capture and verify UI locators from a **running application** using `ui:dump` and Appium MCP.
 
-**Task:** capture and confirm locators on a running app.  
-**Repo contract:** [AGENTS.md](../../../AGENTS.md) — locator priority, naming
-prefixes/suffixes, `find_*` / `loc_*`, no invented selectors.
+This skill is responsible only for capturing and validating locators. Locator priority, naming conventions, and Page Object patterns are defined in `AGENTS.md`.
 
-## When to use
+## When to Use
 
-- Before creating any `*_po.py` file
-- After `get-context`
-- After analyzing a product/source repo (code labels/keys are **hypotheses only**)
-- User asks for selectors, Inspector output, or uiautomator dump
+Use this skill when:
 
-## Prerequisites
+- Creating a new `*_po.py` file
+- Adding a new test scenario (MCP walkthrough required)
+- UI changes have invalidated existing locators
+- Refreshing stale UI dumps
+- Working with Flutter, React Native, or hybrid applications
 
-```bash
-invoke appium:doctor
-invoke emulator:start          # Android; or connect physical device
-invoke app:install             # uses APP_PATH from .env
-```
+> Product source, APK analysis, and Figma can provide candidate locators, but **every locator must be verified on a live application**.
 
 ## Workflow
 
-### 1. Confirm config
+### Step 1 — Prepare the Environment
 
-From `.env`: `APP_SLUG`, `APP_TYPE`, `PLATFORM`, `APP_PACKAGE`, `APP_ACTIVITY`.
+Run:
 
-### 2. Launch app to target screen
+```bash
+invoke appium:doctor
+invoke emulator:start        # or connect a physical device
+invoke app:install           # uses APP_PATH from .env
+```
+
+Verify the following values in `.env`:
+
+- `APP_SLUG`
+- `APP_TYPE`
+- `PLATFORM`
+- `APP_PACKAGE`
+- `APP_ACTIVITY`
+
+Ensure `environment/appium-mcp.capabilities.json` matches the `.env` configuration.
+
+---
+
+### Step 2 — Capture Static UI Dumps
+
+Launch the application:
 
 ```bash
 adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
-# Navigate manually or via deep link to the screen under test
 ```
 
-### 3. Dump UI tree
+Capture the current screen:
 
 ```bash
 invoke ui:dump --screen=<screen_name>
-# writes docs/locators/<screen_name>.xml locally (gitignored)
 ```
 
-Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
+This creates:
 
-### 3b. Appium MCP (live tree — mandatory for new TCs)
+```
+docs/locators/<screen_name>.xml
+```
 
-**Required before any new test scenario** — see **`automate-a-flow`**.
+Repeat for each screen in the flow.
 
-1. Emulator/device up; `.env` matches `environment/appium-mcp.capabilities.json`
-2. `select_device` → `appium_session_management` (`action=create`)
-3. Walk the scenario — `appium_gesture` / `appium_set_value`
-4. Per screen: `appium_get_page_source` → `docs/locators/<screen>.xml`
-5. `generate_locators` — **confirm every selector** against page source before `*_po.py`
+Do **not** commit `docs/locators/*.xml`.
 
-Screenshots → `target/mcp-screenshots/` when `NO_UI=true`.
+---
 
-### 4. Parse dump
+### Step 3 — Walk the Flow with Appium MCP
 
-Apply **AGENTS.md Locator strategy** (priority + naming) to each interactive
-element. Re-dump after animations, keyboard, or navigation.
+This step is **mandatory** for every new test scenario.
 
-### 5. App-type notes (while parsing)
+Create a session:
 
-| `APP_TYPE` | Guidance |
-|------------|----------|
-| `flutter` | Prefer `content-desc` / semantic labels; avoid brittle XPath into `android.view.View` |
-| `rn` | Prefer `content-desc` matching `testID` / `accessibilityLabel` |
-| `hybrid` | Dump native; switch WebView in actions for H5 |
-| `native` | `resource-id` usually stable |
+- `select_device`
+- `appium_session_management (action=create)`
 
-### 6. Produce locator sheet
+Walk through the application using:
 
-Document in `docs/<app_slug>-flow.md` or `docs/locators/<screen>.md`:
+- `appium_gesture`
+- `appium_set_value`
+- `appium_find_element`
 
-| PO name | Element | Strategy | Locator value | Confirmed |
-|---------|---------|----------|---------------|-----------|
-| `input_mobile` | Phone field | accessibility id | `...` | yes |
+For each screen:
 
-PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobile`).
+1. Capture a screenshot.
+2. Retrieve the page source.
+3. Save the XML dump to `docs/locators/<screen>.xml`.
+4. Run `generate_locators`.
+5. Verify every generated locator against both:
+   - Page source
+   - Visible UI text
 
-Dump file names: `docs/locators/<screen>.xml` (snake_case screen names).  
-iOS: `docs/locators/<screen>_ios.xml`.
+### Common Preconditions
 
-### 7. Hand off
+| Scenario | Action |
+|----------|--------|
+| Fresh login | Clear app data and relaunch |
+| Logged-in session | Reuse the existing session |
+| Downstream flow | Complete login before continuing |
 
-Only after the locator sheet exists → **`mobile-appium-python`** / **`automate-a-flow`**.
+When `NO_UI=true`, screenshots should be stored in:
 
-## Skill-specific rules
+```
+target/mcp-screenshots/
+```
 
-- Never guess from APK or product source alone — confirm live
-- Product repo / widget keys are candidates only
-- Do not commit `docs/locators/*.xml` (see `.gitignore`)
+---
 
-## Related skills
+### Step 4 — Build the Locator Sheet
 
-`automate-a-flow` · `mobile-appium-python` · [AGENTS.md](../../../AGENTS.md)
+Apply the locator priority and naming conventions defined in `AGENTS.md`.
+
+Optionally document the results in:
+
+```
+docs/locators/<screen>.md
+```
+
+Recommended format:
+
+| Page Object | Element | Strategy | Locator | Confirmed |
+|-------------|---------|----------|---------|-----------|
+
+### Locator Preference by App Type
+
+| APP_TYPE | Preferred Locator |
+|----------|-------------------|
+| `flutter` | `content-desc` / Semantics |
+| `rn` | `testID` / `accessibilityLabel` |
+| `hybrid` | Native hierarchy (switch to WebView only when required) |
+| `native` | `resource-id` |
+
+Re-capture dumps whenever:
+
+- animations complete
+- the keyboard changes the layout
+- navigation changes the UI
+
+---
+
+### Step 5 — Summarize Findings
+
+Before handing off, provide:
+
+- Screens visited (in order)
+- Confirmed UI text
+- Verified locator strategy for each screen
+- UI quirks or overlays
+- Gaps between the implemented UI and the expected flow
+
+---
+
+### Step 6 — Hand Off
+
+Once the locator sheet is complete, hand off to:
+
+- `mobile-appium-python`, or
+- `automate-a-flow`
+
+## Rules
+
+- Never author Page Object files in this skill.
+- Never rely solely on APK analysis, product source, or Figma.
+- Every locator must be confirmed in a live session.
+- Save iOS dumps as `docs/locators/<screen>_ios.xml`.
+- Never commit generated XML dumps.
+
+## Related Skills
+
+- `automate-a-flow`
+- `get-context`
+- `mobile-appium-python`

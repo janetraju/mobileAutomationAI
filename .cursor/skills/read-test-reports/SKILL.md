@@ -1,133 +1,93 @@
----
-name: read-test-reports
-description: >-
-  Generate and open Allure HTML reports from pytest results, and interpret
-  failure artifacts (screenshot, page source, logcat). Use when the user asks
-  to generate/open a report, run invoke report, view Allure, or debug a failed
-  E2E run from attachments.
-disable-model-invocation: true
----
+# Read Test Reports
 
-# Test Reports (generate + read)
+Generate Allure HTML from pytest results and triage failure artifacts (screenshot, page source, logcat).
 
-Covers **report generation** and **failure triage**. Derived from `pytest.ini`,
-`tests/conftest.py` `pytest_runtest_makereport`, and `tasks.py` `report`.
+Reports reflect **only the latest pytest run**. Use this skill after a test failure to find the root cause — not to patch with `time.sleep()`.
 
----
+## When to Use
 
-## Part A — Generate the report
+Use this skill when:
 
-### How results are produced
+- Generating or opening an Allure report (`invoke report`)
+- Debugging a failed E2E run from attachments
+- Triage after `automate-a-flow` verification fails
 
-| Step | What happens | Path |
-|------|----------------|------|
-| 1. Run tests | `allure-pytest` writes raw results each pytest session | `target/allure-results/` |
-| 2. Generate HTML | Allure CLI builds the report from those results | `target/allure-report/` |
-| 3. Open | Local Allure server serves the HTML | browser on `127.0.0.1:<port>` |
+## Workflow
 
-`pytest.ini` sets `--alluredir=target/allure-results` and `--clean-alluredir`
-(previous results wiped at the start of each run).
+### Step 1 — Confirm Results Exist
 
-### Prerequisites
+Reports require a completed pytest run:
 
 ```bash
-allure --version    # Allure CLI + Java 8+
-# Install if missing: https://docs.qameta.io/allure/ (or brew install allure)
-```
-
-`allure-pytest` is already a project dep (`pyproject.toml`).
-
-### Commands
-
-```bash
-# 1) Produce raw results (always run tests first)
 invoke test --markers "e2e and p0"
 # or: pytest -m "e2e and p0"
+```
 
-# 2) Generate HTML + open browser (default port 5050)
+Raw results: `target/allure-results/` (configured in `pytest.ini` with `--clean-alluredir`).
+
+Prerequisite: Allure CLI + Java (`allure --version`).
+
+### Step 2 — Generate the Report
+
+```bash
 invoke report
 invoke report --port=5051
 
-# Equivalent manual CLI
+# Manual equivalent
 allure generate target/allure-results -o target/allure-report --clean
 allure open target/allure-report -h 127.0.0.1 -p 5050
 ```
 
-### What gets into the report
+Tell the user the report URL (default `http://127.0.0.1:5050`).
 
-| Source | How it appears |
-|--------|----------------|
-| `@allure.epic` / `feature` / `story` / `severity` on tests | Suites / labels |
-| `allure.dynamic.title(...)` | Parametrized case titles |
-| `@allure.step` on steps + `assert_helper` | Timeline steps |
-| Failure hook in `conftest.py` | Attachments: screenshot, page_source, logcat (Android) |
-| `--record-video` | Optional session video when `RECORD_VIDEO=true` |
+Do not commit `target/allure-results/` or `target/allure-report/`.
 
-No per-test screenshot code needed — conftest attaches on failure.
-
-### Generation rules
-
-- **Always run tests before `invoke report`** — empty `target/allure-results/` → task prints *"No allure-results found"* and exits
-- `--clean-alluredir` means the report reflects **only the latest pytest run**, not a historical merge
-- Do not commit `target/allure-results/` or `target/allure-report/` (gitignored under `target/`)
-- Do not change `pytest.ini` reporters unless the user asks
-
-### Agent instructions (generate)
-
-1. Confirm tests were run and `target/allure-results/` has files.
-2. Run `invoke report` (or generate without open if headless CI).
-3. Tell the user the report path / URL (`http://127.0.0.1:5050` by default).
-
----
-
-## Part B — Read / triage the report
-
-### Artifacts
-
-| Artifact | Path / where | When |
-|---|---|---|
-| Allure results | `target/allure-results/` | Every pytest run |
-| Allure report | `target/allure-report/` | After `invoke report` |
-| Screenshot | Allure attachment | Failure |
-| Page source | Allure attachment | Failure |
-| Logcat (Android) | Allure attachment (last 200 lines) | Failure |
-
-### Failure investigation
+### Step 3 — Triage a Failure
 
 ```text
 Test fails
   → pytest stdout / -ra summary
-  → invoke report (Part A) → open screenshot, page_source, logcat
+  → invoke report → screenshot, page_source, logcat attachments
   → identify failed @allure.step
   → invoke ui:dump --screen=<name> on failing screen
 ```
 
-Do not add `time.sleep()` to fix flaky runs.
+Attachments come from `conftest.py` on failure — no per-test screenshot code needed.
 
-### On failure — update skills (mandatory)
+### Step 4 — Map Failure to Owner
 
-After triaging a failed run, **update the relevant skill** — not only application
-code. See **`automate-a-flow` Step 5**.
-
-| If failure involves… | Update |
-|---|---|
-| Screenshot / page source / logcat / report gaps | This skill |
-| Locator timeout | `discover-mobile-locators` Known pitfalls |
-| Login / session / emulator | `mobile-appium-python`, `automate-a-flow` |
+| Failure involves | Update |
+| ---------------- | ------ |
+| Report / attachment gaps | This skill |
+| Locator timeout | `discover-mobile-locators` |
+| Login / session / emulator | `automate-a-flow`, `mobile-appium-python` |
 | Layer import violation | `pr-review-changes`, `mobile-appium-python` |
 
-Append dated bullets under **Known pitfalls** so the next agent does not repeat
-the mistake.
+See **`automate-a-flow`** Step 6 for the full update-skills policy.
 
-### Agent instructions (read)
+### Step 5 — Record Learnings
 
-1. Open the generated report (or inspect attachments in `target/allure-results/`).
-2. Point to conftest auto-attachments — no per-test screenshot code needed.
-3. Map the failed step back to the owning skill / PO.
+When the failure teaches something reusable, append under **Known pitfalls** in the owning skill:
 
----
+```markdown
+### Known pitfalls (updated YYYY-MM-DD)
+- **Symptom:** …
+  **Cause:** …
+  **Fix:** …
+```
 
-## Related skills
+Skip only for one-off environment issues (e.g. device unplugged).
 
-`automate-a-flow` · `mobile-appium-python` · `discover-mobile-locators` ·
-[AGENTS.md](../../../AGENTS.md)
+## Rules
+
+- Always run tests before `invoke report` — empty results exit with an error.
+- Do not change `pytest.ini` reporters unless the user asks.
+- Flaky fixes follow **AGENTS.md** wait strategy — never add `time.sleep()`.
+- Map the failed step back to the owning PO, step, or skill.
+
+## Related Skills
+
+- `automate-a-flow`
+- `mobile-appium-python`
+- `discover-mobile-locators`
+- `pr-review-changes`

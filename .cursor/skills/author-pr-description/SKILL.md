@@ -1,109 +1,157 @@
----
-name: author-pr-description
-description: >-
-  Draft (or update) an accurate, detailed pull request description from the
-  current branch's real commits/diff — summary, grouped changes, test plan,
-  known blockers/follow-ups — before running `gh pr create`/`gh pr edit`.
-  Use when the user asks to raise, open, or create a PR, or wants an
-  existing PR's description written/improved for this repo.
-disable-model-invocation: true
----
-
 # Author PR Description
 
-Turns the actual commits/diff on a branch into a PR description a reviewer
-can act on without re-deriving it themselves — never a vague "various
-fixes" summary, and never a claimed test result that wasn't actually run.
+Generate or update a reviewer-friendly pull request description from the current branch.
 
-## When to use
+The description must be based on the **actual commits and diff**. Never invent changes or claim tests were run unless they actually were.
 
-- User asks to raise/open/create a PR for the current branch
-- User asks to improve, rewrite, or fill in an existing PR's description
-- Before `gh pr create` — description must be drafted and approved first
+## When to Use
 
-## Read first
+Use this skill when:
 
-1. **`AGENTS.md`** — repo conventions, current feature/lifecycle context
-2. `git log <base>..HEAD` and `git diff <base>...HEAD` — the actual scope,
-   not assumptions carried over from chat
-3. `docs/cofee-flow.md`, `docs/context/*.md`, `docs/locators/*.md` touched
-   on this branch — reference these, don't re-explain their content
-4. `gh pr view` (if a PR already exists for this branch) — update in place,
-   don't duplicate
+- Creating a new Pull Request
+- Updating an existing Pull Request description
+- Preparing a PR before running `gh pr create`
 
 ## Workflow
 
-### 1. Determine base and scope
+### Step 1 — Understand the Repository
 
-Confirm the base branch (usually `master`) and that the working tree is
-clean. If the branch isn't pushed yet or is behind, that's a separate,
-confirmable step (see Phase 4) — don't silently push as a side effect of
-drafting.
+Review:
 
-### 2. Gather real changes
+**Required**
+
+- `AGENTS.md`
+
+**If modified on this branch**
+
+- `docs/cofee-flow.md`
+- `docs/context/*.md`
+- `docs/locators/*.md`
+
+Determine:
+
+- Base branch
+- Current branch
+- Working tree status
+
+Do **not** push or modify the branch during this step.
+
+### Step 2 — Inspect the Changes
+
+Collect the actual scope of the PR.
 
 ```bash
 git log --oneline <base>..HEAD
 git diff --stat <base>...HEAD
+git diff <base>...HEAD
 ```
 
-Group commits/files by concern the way this repo's own commit messages
-already do — e.g. feature automation, skill/pipeline changes, docs,
-bug fixes discovered along the way. Don't invent a grouping that doesn't
-match what's actually in the diff.
+If a PR already exists:
 
-### 3. Draft the description (fixed shape)
+```bash
+gh pr view
+```
 
-- **Summary** — 2–4 bullets: what changed and why, not a file listing
-- **Changes** — grouped by area, naming specific files/skills/tests touched
-- **Test plan** — a table, not a checklist, of what was *actually* run or
-  verified this session:
+Group changes based on the implementation, such as:
 
-  | Test Case | Status | Notes |
-  |---|---|---|
-  | `test_name` (TC id if applicable) | ✅ Passed / ❌ Failed / ⚠️ Partial / ⬜ Not run | Command/session evidence, caveats |
+- Feature automation
+- Framework updates
+- Bug fixes
+- Documentation
+- Test improvements
 
-  One row per test case (parametrized cases get their own row, not a
-  collapsed summary). Cite the specific `pytest` invocation or live-device
-  check (`discover-mobile-locators`/manual exploration) as evidence. Mark
-  anything not verified as **⬜ Not run** — never imply a check happened
-  when it didn't, and never collapse a partial/flaky result into ✅
-- **Known blockers / follow-ups** — carried over from `docs/cofee-flow.md`'s
-  Known Blockers section when relevant, or newly discovered ones
+Avoid creating artificial categories.
 
-### 4. Present draft, get approval
+### Step 3 — Draft the PR Description
 
-Show the full draft body in chat. Wait for explicit approval before running
-`gh pr create` or `gh pr edit`. Revise on feedback — no re-asking needed
-for iteration, only for the final go-ahead.
+Use the following structure.
 
-### 5. Raise or update the PR
+#### Summary
 
-- Confirm before pushing an unpushed/behind branch (standard risk-action
-  check — pushing is visible to others)
-- New PR: `gh pr create --title "<70 chars>" --body "$(cat <<'EOF' ... EOF)"`
-- Existing PR: `gh pr edit <number> --body "..."`
-- Report the PR URL back to the user
+- 2–4 bullets
+- Explain what changed
+- Explain why it changed
+- Avoid listing files
+
+#### Changes
+
+Group related work together.
+
+```text
+### Automation
+- ...
+
+### Framework
+- ...
+
+### Documentation
+- ...
+```
+
+Reference modified documentation instead of repeating its contents.
+
+#### Test Plan
+
+| Test Case | Status | Evidence / Notes |
+| ---------- | ------ | ---------------- |
+| TC-001 | ✅ Passed | `pytest tests/...` |
+| TC-002 | ⚠️ Partial | Failed on retry |
+| TC-003 | ⬜ Not run | Not executed |
+
+Rules:
+
+- One row per test case
+- Separate parameterized test cases
+- Include the execution command or verification evidence
+- Never mark a test as passed unless it actually ran
+
+#### Known Blockers / Follow-ups
+
+Include:
+
+- Existing blockers
+- Newly discovered issues
+- Remaining TODOs
+- Follow-up work
+
+### Step 4 — Request Approval
+
+Display the complete PR description.
+
+Wait for explicit user approval before creating or updating the PR.
+
+If revisions are requested, update the draft and present it again.
+
+### Step 5 — Create or Update the PR
+
+If the branch is unpushed or behind the remote, ask for confirmation before pushing.
+
+Create a new PR:
+
+```bash
+gh pr create
+```
+
+Update an existing PR:
+
+```bash
+gh pr edit
+```
+
+Return the PR URL after completion.
 
 ## Rules
 
-- Never invent a test-plan item that wasn't actually run — cite the exact
-  command/session evidence, or mark it **Not run**
-- Keep the title under ~70 characters; put detail in the body
-- Reference every relevant doc this branch touched
-  (`docs/context/`, `docs/locators/`, `docs/cofee-flow.md`) by name/link —
-  don't restate their content
-- Approval gate is mandatory — never call `gh pr create`/`gh pr edit`
-  before the user approves the draft
-- Never force-push or rewrite history to "clean up" the PR — describe what
-  is actually there
-- If commits mix unrelated work (e.g. a merge pulling in someone else's
-  feature), say so explicitly in Summary rather than presenting it as your
-  own change
-- Never push to a remote the user doesn't have write access to without
-  confirming first — check `gh repo view --json viewerPermission` if unsure
+- Describe only the work present in the current branch.
+- Never invent implementation details or test results.
+- Reference documentation instead of copying it.
+- Never create or update a PR without user approval.
+- Never force-push or rewrite history.
+- Mention unrelated commits if the branch contains mixed work.
 
-## Related skills
+## Related Skills
 
-`pr-review-changes` · `mobile-appium-python` · `read-test-reports` ·
-[AGENTS.md](../../../AGENTS.md)
+- `pr-review-changes`
+- `mobile-appium-python`
+- `read-test-reports`
+- `automate-a-flow`

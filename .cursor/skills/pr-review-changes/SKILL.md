@@ -1,54 +1,84 @@
----
-name: pr-review-changes
-description: >-
-  Code review against AGENTS.md Repo contract for Appium mobile automation.
-  Use when reviewing PRs or local changes. Does not redefine repo rules —
-  checks compliance with AGENTS.md.
-disable-model-invocation: true
----
-
 # Review Changes
 
-**Task:** review diffs for compliance.  
-**Source of truth:** [AGENTS.md](../../../AGENTS.md) **Repo contract**.  
-For PR body drafting, use **`author-pr-description`**.
+Review automation diffs for compliance with the repo contract in **AGENTS.md**.
 
-## How to review
+This skill checks whether changes follow layer boundaries, locator policy, waits, tests, and code quality. It does not redefine those rules — cite **AGENTS.md** sections when flagging issues.
 
-1. Read the diff.
-2. Check each changed file against **AGENTS.md** sections:
-   - Architecture & layer boundaries
-   - Locator strategy
-   - Wait & stability
-   - Assertions
-   - Tests, markers & Allure
-   - Code quality
-3. Flag violations with the **AGENTS.md section name** in the comment.
+## When to Use
 
-## Quick checklist (pointers only)
+Use this skill when:
 
-| Severity | Check (details in AGENTS.md) |
-|----------|------------------------------|
-| Critical | Layer imports; no `driver.find_element` outside POs; no locators in tests/steps; no `time.sleep()`; no secrets |
-| High | `# --- Locators ---`; `find_*` / `loc_*`; `e2e` + priority markers; live-confirmed locators; Allure labels |
-| Medium | `EXPLICIT_WAIT_TIMEOUT`; re-query after nav; `pytest.param` ids; `PARALLEL_GROUP_*` when needed; `invoke lint` clean |
+- Reviewing a pull request or local branch changes
+- Validating new page objects, actions, steps, dataproviders, or tests
+- Checking automation work before merge
 
-## Layer smoke check
+For PR description drafting, use **`author-pr-description`** instead.
 
-| Layer | Pass if |
-|-------|---------|
-| PO | Locators only; `BasePage` |
-| Actions | `PageActions` + PO; no assert_helper |
-| Steps | Actions only; `@allure.step` |
-| Tests | Steps + assert_helper only |
-| Dataprovider | `get_*_test_data()`; no secrets |
+## Workflow
 
-## Traceability
+### Step 1 — Understand the Change
 
-New/changed tests should map to approved `docs/context/*-testcases.md` or the
-flow doc priority matrix.
+Review:
 
-## Related skills
+**Required**
 
-`author-pr-description` · `mobile-appium-python` · `automate-a-flow` ·
-[AGENTS.md](../../../AGENTS.md)
+- `AGENTS.md`
+
+**If modified on this branch**
+
+- `src/page_objects/`, `src/page_actions/`, `src/steps/`
+- `tests/dataprovider/`, `tests/test/`
+- `docs/context/*.md`, `docs/<app_slug>-flow.md`
+
+Map each changed file to its layer (PO, actions, steps, dataprovider, test, docs).
+
+### Step 2 — Check Repo Contract
+
+Walk **AGENTS.md** section by section:
+
+| Section | Verify |
+| ------- | ------ |
+| Architecture & layer boundaries | Import direction; no driver in tests/steps; locators only in POs |
+| Locator strategy | Live-confirmed selectors; naming; no duplicate XPath |
+| Wait & stability | Re-query after navigation; no `time.sleep()` |
+| Assertions | Observable UI outcomes; no assert_helper in actions |
+| Tests, markers & Allure | `@pytest.mark.e2e` + priority; Allure labels |
+| Code quality | Lint clean; no bare `except:`; no secrets |
+
+### Step 3 — Traceability
+
+Confirm:
+
+- Tests map to approved `docs/context/*-testcases.md` or flow doc P0 matrix
+- New locators have a dump or MCP walkthrough note
+- Flow/context docs updated if behavior or blockers changed
+
+### Step 4 — Run Verification
+
+```bash
+invoke lint --no-fix
+invoke test --markers "<relevant markers>"
+```
+
+### Step 5 — Report Findings
+
+Group by severity:
+
+- **Blocker** — must fix before merge
+- **Should fix** — contract violation or missing traceability
+- **Nit** — style or optional improvement
+
+Reference the **AGENTS.md** section for each finding.
+
+## Rules
+
+- Do not restate repo rules — point to **AGENTS.md**.
+- Flag import-direction and layer violations as blockers.
+- Require live-confirmed locators for new PO fields.
+- Do not approve tests that skip upstream prerequisite checks when the flow depends on login.
+
+## Related Skills
+
+- `author-pr-description`
+- `mobile-appium-python`
+- `automate-a-flow`

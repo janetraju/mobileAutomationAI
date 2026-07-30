@@ -1,62 +1,32 @@
----
-name: automate-a-flow
-description: >-
-  Orchestrate turning an approved test case or scenario into working E2E
-  automation: validate prereqs, walk the flow on device via Appium MCP, then
-  hand off layer coding to mobile-appium-python. Use when the user says
-  "automate this", "implement this flow", or gives a TC to automate — not for
-  editing a single PO/step file (use mobile-appium-python for that).
-disable-model-invocation: true
----
-
 # Automate a Flow
 
-**Task:** turn **one approved scenario** into a working E2E test, in the
-right order, with **live** locators — never invented ones.
+Orchestrate one approved test scenario into working E2E automation: validate prerequisites, walk the flow on device, then hand off layer coding.
 
-**Repo contract:** [AGENTS.md](../../../AGENTS.md) (architecture, locators,
-waits, markers). This skill owns *sequencing and gating* only — it does not
-redefine how a layer file looks (`mobile-appium-python`), how to discover
-locators (`discover-mobile-locators`), or how to read a report
-(`read-test-reports`). Each is linked at the point it applies, not restated.
+This skill owns **sequencing and gating** only. Locator discovery → **`discover-mobile-locators`**. Layer files → **`mobile-appium-python`**. Repo rules → **AGENTS.md**.
 
-## When to use
+## When to Use
 
-- User says "automate this", "implement this flow", or hands you an approved TC id
-- **Not** for editing a single PO/action/step file — go straight to `mobile-appium-python`
+Use this skill when:
 
-## Read first
+- The user says "automate this" or "implement this flow"
+- You have an approved test case id from `docs/context/*-testcases.md`
+- Starting a new end-to-end scenario from scratch
 
-1. [AGENTS.md](../../../AGENTS.md) — repo contract
-2. Approved `docs/context/<app_slug>-<feature>-testcases.md`, **or** the flow doc's P0 row
-3. `docs/<app_slug>-flow.md`
-4. Existing code under `src/**/<app_slug>/` and `tests/test/<app_slug>/` — reuse before creating
+Do **not** use for editing a single PO or step file — go directly to **`mobile-appium-python`**.
 
----
+## Workflow
 
-## Step 0 — Prerequisites
+### Step 1 — Review Inputs
 
-Do not write a downstream test (groups, payments, …) until these pass on a
-real device/emulator:
+Read:
 
-| Check | How |
-|-------|-----|
-| Emulator + Appium healthy | `invoke appium:doctor` |
-| App installed | `invoke app:install` |
-| Login works | Login P0 passes on a clean emulator — see `setup-mobile-test-data` for credentials/OTP strategy |
+**Required**
 
-If the flow needs login, **run login first**. Don't rely on
-`user_ensures_logged_in_home` to silently paper over broken infra.
+- `AGENTS.md`
+- Approved `docs/context/<app_slug>-<feature>-testcases.md` or flow doc P0 row
+- `docs/<app_slug>-flow.md`
 
----
-
-## Step 1 — Parse the scenario
-
-Write down: feature, priority (`p0`/`p1`/`p2`), steps (from approved
-testcases or flow doc), assertions (observable UI success criteria), test
-data source, preconditions.
-
-**Search before creating anything new:**
+**Search before creating**
 
 ```text
 src/page_objects/<app_slug>/   src/page_actions/<app_slug>/   src/steps/<app_slug>/
@@ -65,130 +35,95 @@ docs/context/
 ```
 
 Reuse existing steps when they exist (e.g. `user_ensures_logged_in_home`).
-Product source tells you **what** to automate; the device dump tells you
-**how** to find elements — don't conflate the two.
 
----
+### Step 2 — Validate Prerequisites
 
-## Step 2 — Gather docs
+Do not author downstream flows (groups, payments, …) until upstream passes on device:
 
-1. Read the approved test cases or the flow doc's P0 matrix.
-2. Grep existing POs/actions/steps/tests for this feature — list gaps
-   (missing screens, locators, assertions), don't rebuild what exists.
-3. Optional: Figma/Jira via `get-context` for **copy only** — never for locators.
+| Check | How |
+| ----- | --- |
+| Emulator + Appium | `invoke appium:doctor` |
+| App installed | `invoke app:install` |
+| Login P0 | Login tests pass on clean emulator |
+| Credentials | Whitelisted `TEST_MOBILE` · `TEST_OTP` in `.env` — see `setup-mobile-test-data` |
 
----
+Run login first if the flow depends on it. Do not assume session-reuse helpers mask infra gaps.
 
-## Step 3 — Walk the flow on device (mandatory for new TCs)
+### Step 3 — Parse the Scenario
 
-**No new test or PO until the scenario has been walked on a live
-emulator/device.** The *how* (Appium MCP session setup, gestures, page
-source capture, `generate_locators`) is entirely **`discover-mobile-locators`**'s
-job — run it now if you haven't. This step is only the orchestration gate:
+Record: feature, priority (`p0`/`p1`/`p2`), steps, observable assertions, test data, preconditions.
 
-| Situation | Action |
-|-----------|--------|
-| New test case | Run `discover-mobile-locators`'s MCP walkthrough before Step 4 — no exceptions |
-| Existing screen, no drift suspected | A quick re-check is still cheaper than a failed run — confirm before assuming |
-| Downstream feature (e.g. payments after login) | Login P0 must already pass first |
+Product source tells you **what** to automate; the device dump tells you **how** to find elements.
 
-Before moving to Step 4, summarize for the user: screens visited, key UI
-strings confirmed, locator notes, any overlays/quirks hit, gaps vs. the flow doc.
+### Step 4 — Walk Flow on Device (mandatory for new TCs)
 
----
+**No new test or PO until the scenario is walked live.**
 
-## Step 4 — Implement
+Run **`discover-mobile-locators`** MCP walkthrough. Summarize before coding:
 
-Layer order and file conventions are **`mobile-appium-python`**'s job —
-don't restate them here, just follow its "Feature add order":
+```text
+- Screens visited (order)
+- Key UI strings confirmed
+- Locator notes per screen
+- Overlays / quirks
+- Gaps vs flow doc
+```
+
+Optional: Figma/Jira from `get-context` for **copy only** — never for locators.
+
+### Step 5 — Implement Layers
+
+Hand off to **`mobile-appium-python`**:
 
 ```text
 page_objects → page_actions → steps → dataprovider → test
 ```
 
-| Situation | Do this |
-|-----------|---------|
+| Situation | Action |
+| --------- | ------ |
 | Steps already exist | Wire test + dataprovider only |
-| New screen | Dump (Step 3) → PO → actions → steps → test |
-| Locator drift | Fix the one PO field that drifted; grep for duplicate definitions elsewhere |
-| Multi-screen flow | One step module calling several actions |
+| New screen | Dump → PO → actions → steps → test |
+| Locator drift | Fix one PO field; grep duplicates |
 
-**Done when:** Step 3's walkthrough is complete, every locator is
-live-confirmed (not guessed), steps exist before the test file, and
-markers/Allure labels follow `AGENTS.md`.
+**Done when:** MCP walk complete, no invented locators, steps before test, markers per **AGENTS.md**.
 
----
+### Step 6 — Verify
 
-## Step 5 — Verify
-
-Run **upstream regressions first**, then the new flow — this ordering is
-this skill's job; the actual `invoke` commands and report generation live
-in `AGENTS.md` and **`read-test-reports`**:
+Run upstream regressions first:
 
 ```bash
-invoke test --markers "login and p0"      # upstream — must stay green
+invoke test --markers "login and p0"
 invoke test --markers "<new_feature_marker>"
-invoke test --markers "e2e and p0"        # full regression
+invoke test --markers "e2e and p0"
 ```
 
-Then see `read-test-reports` to generate/open the Allure report. On
-failure: re-dump the screen (Step 3), don't add `time.sleep()` — see
-`AGENTS.md` for wait strategy.
+Then **`read-test-reports`** for Allure triage. On failure: re-dump — do not add `time.sleep()`.
 
----
+### Step 7 — Update Knowledge on Failure
 
-## Step 6 — On failure, update knowledge
+Fix code **and** record reusable learnings — see **`read-test-reports`** for which skill owns which failure type.
 
-Fix the code **and** record what you learned — unless it was a one-off
-environment glitch. **Which skill owns which kind of failure knowledge is
-`read-test-reports`'s triage table ("On failure — update skills")** — use
-that, don't re-derive a second mapping here.
+Append process-level pitfalls under **Known pitfalls** in this skill. App-specific quirks → `docs/<app_slug>-flow.md` Known Blockers.
 
-This skill's own share of that knowledge is process/orchestration-level
-pitfalls (see **Known pitfalls** below) — not app-specific UI quirks, which
-belong in `docs/<app_slug>-flow.md`'s Known Blockers instead.
+## Rules
 
-Append under **Known pitfalls**:
+- Never write a new TC without Step 4 device walkthrough.
+- Never write downstream tests before login P0 passes.
+- Do not restate layer or locator rules — **AGENTS.md** owns those.
+- Skip skill updates only for one-off environment issues.
 
-```markdown
-### Known pitfalls (updated YYYY-MM-DD)
-- **Symptom:** …
-  **Cause:** …
-  **Fix:** …
-```
+## Known Pitfalls (process-level)
 
----
+- **`pm clear` mid-session kills UiAutomator2** — quit session before clearing app data; recreate driver after relaunch.
+- **Emulator cold boot ~300s** — set `AVD_NAME`; don't assume short boot timeouts.
+- **Google phone picker** can intercept phone fields — dismiss before typing.
 
-## Don't do this
+## Related Skills
 
-Repo-wide rules (sleeps, invented locators, wrong layer imports) live in
-**AGENTS.md** — don't re-litigate them here. Orchestration-specific:
-
-- Writing a new TC without the Step 3 device walkthrough
-- Writing downstream tests before login P0 passes
-- Skipping Step 0 prerequisites
-- Fixing code without updating the owning skill when the failure teaches something reusable (see Step 6)
-
----
-
-## Known pitfalls (process-level, app-agnostic — updated 2026-07-30)
-
-App-specific quirks (e.g. CoFee's onboarding carousel, home nav labels, fee
-assertions) live in `docs/<app_slug>-flow.md`'s Known Blockers, not here.
-
-- **`pm clear` mid-session kills the UiAutomator2 server** — quit the
-  Appium session before clearing app data, then create a fresh driver
-  session after relaunching; don't `pm clear` under a live session.
-- **Emulator cold boot can take ~300s** — set `AVD_NAME` explicitly; don't
-  assume a fixed short timeout in `wait-for-device.sh`.
-- **Android's phone-number autofill picker** (Google account phone
-  suggestions) can intercept a phone-entry field — dismiss it before typing,
-  don't assume the field is immediately interactable after screen load.
-
----
-
-## Related skills
-
-`get-context` · `extract-p0-test-cases` · `discover-mobile-locators` ·
-`setup-mobile-test-data` · `mobile-appium-python` · `read-test-reports` ·
-`pr-review-changes` · [AGENTS.md](../../../AGENTS.md)
+- `get-context`
+- `extract-p0-test-cases`
+- `discover-mobile-locators`
+- `setup-mobile-test-data`
+- `mobile-appium-python`
+- `read-test-reports`
+- `pr-review-changes`

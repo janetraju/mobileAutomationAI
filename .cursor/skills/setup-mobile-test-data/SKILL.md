@@ -1,86 +1,86 @@
----
-name: setup-mobile-test-data
-description: >-
-  Set up mobile test data via API, OTP helpers, and encrypted fixtures.
-  Use when tests need login credentials, OTP injection, backend seeding,
-  org/account setup, or API assertions before or during UI flows.
-disable-model-invocation: true
----
-
 # Setup Mobile Test Data
 
-## When to use
+Configure OTP, API credentials, and fixtures so login and downstream E2E tests can run.
 
-- Before login / onboarding E2E tests
-- User provides test phone, OTP strategy, or API credentials
+Secrets and dataprovider rules live in **AGENTS.md** — this skill covers only the setup workflow.
+
+## When to Use
+
+Use this skill when:
+
+- Preparing login or onboarding E2E tests
+- The user provides test phone, OTP strategy, or API credentials
 - Tests need pre-seeded org, account, or feature flags
 - Backend state must be verified alongside UI
 
-## Read first
+## Workflow
 
-1. **`AGENTS.md`**
-2. **`.env` / `.env.<env>`** — credentials live here only
-3. **`src/core/api_client.py`**
-4. **`data/<app_slug>/`** — structured non-secret fixtures
+### Step 1 — Review Configuration
 
-## Config variables
+Read:
 
-| Variable | Purpose |
-|----------|---------|
-| `API_BASE_URL` | From `APP_REGISTRY` or explicit override |
-| `API_AUTH_TOKEN` | Bearer token for admin/test APIs (`.env` only) |
-| `TEST_MOBILE` | Default phone for login tests |
-| `DEFAULT_USERNAME` / `DEFAULT_PASSWORD` | Non-phone auth if applicable |
-| `OTP_GENERATE_PATH` | Default `/auth/generate-otp` |
-| `OTP_VALIDATE_PATH` | Default `/auth/validate-otp` |
-| `FEATURE_ORG_ID` / `FEATURE_ACCOUNT_ID` | Shared suite setup |
+**Required**
 
-## OTP strategies
+- `AGENTS.md` (Secrets & config)
+- `.env` / `.env.<env>`
+- `src/core/api_client.py`
+- `data/<app_slug>/`
 
-Document the active strategy in `docs/<app_slug>-flow.md` → Known blockers / Test data.
+Key variables: `API_BASE_URL`, `API_AUTH_TOKEN`, `TEST_MOBILE`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`.
+
+### Step 2 — Choose OTP Strategy
+
+Document the active strategy in `docs/<app_slug>-flow.md` → Test data / Known blockers.
 
 | Strategy | Implementation |
-|----------|----------------|
-| **Fixed OTP in dev** | Set `TEST_OTP` in `.env.dev` (never commit) |
-| **API inject** | `generate_otp()` then read from test mail/SMS hook or debug endpoint |
-| **Manual** | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
-| **Bypass** | Deep link / `auth_profile` + `no_reset` session reuse |
+| -------- | -------------- |
+| Fixed OTP (dev) | `TEST_OTP` in `.env.dev` — never commit |
+| API inject | `generate_otp()` + test mail/SMS hook or debug endpoint |
+| Manual | `@pytest.mark.manual_otp` — avoid in CI |
+| Bypass | Deep link / `auth_profile` + `no_reset` session reuse |
 
 ```python
 from src.core.api_client import generate_otp, validate_otp, ApiClient
 
-# Example — paths from settings
-generate_otp("+919876543210")
+generate_otp("+919876543210")  # paths from settings
 ```
 
-## Data layout
+### Step 3 — Layout Fixtures
 
 ```
 data/<app_slug>/
   users.example.json      # structure only, committed
-  users.json              # gitignored if contains real data
+  users.json              # gitignored if real data
   org_setup.example.json
 ```
 
-Encrypt at rest if secrets must live in repo; decrypt via env key (document in README).
+Dataproviders reference env vars or `data/<app_slug>/` — never hardcode passwords.
 
-## Dataprovider rules
+Optional: DB checks via `psycopg` — keep SQL in `data/<app_slug>/` scripts, not in page layers.
 
-- `tests/dataprovider/dp_*.py` returns `list[pytest.param(..., id="...")]`
-- Reference **env vars** or `data/<app_slug>/` — never hardcode passwords
-- Time-relative values computed in tests, not at collection
+### Step 4 — Verify Readiness
 
-## DB checks (optional)
+Confirm:
 
-If `DB_HOST` is set, use `psycopg` in test setup/teardown — keep SQL in `data/<app_slug>/` scripts, not in page layers.
+- `TEST_MOBILE` is set when login tests will be collected
+- Whitelisted phone on dev API (if OTP flow requires it)
+- Strategy documented in flow doc
 
-## Hand off
+### Step 5 — Hand Off
 
-After data strategy is documented and `.env.<env>` is configured →
-**`automate-a-flow`** (orchestration) → **`mobile-appium-python`** (layer code).
+```text
+setup-mobile-test-data → automate-a-flow → mobile-appium-python
+```
 
 ## Rules
 
-- No secrets in dataproviders, POs, steps, or committed JSON
-- No production credentials — dev/stg/uat only
-- Fail fast if `TEST_MOBILE` missing when login tests are collected
+- No secrets in dataproviders, POs, steps, or committed JSON.
+- Dev/stg/uat credentials only — never production.
+- Fail fast if `TEST_MOBILE` is missing when login tests are collected.
+- Time-relative values computed in tests, not at collection.
+
+## Related Skills
+
+- `get-context`
+- `automate-a-flow`
+- `mobile-appium-python`
