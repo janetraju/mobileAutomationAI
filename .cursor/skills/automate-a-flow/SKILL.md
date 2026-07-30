@@ -108,7 +108,7 @@ real device/emulator through Appium MCP.**
 This step confirms navigation, copy, overlays, and locators before any
 `*_po.py`, steps, or `test_*.py` changes.
 
-Configured in `.cursor/mcp.json` → [appium/appium-mcp](https://github.com/appium/appium-mcp).
+Configured in `.mcp.json` → [appium/appium-mcp](https://github.com/appium/appium-mcp).
 Caps live in `environment/appium-mcp.capabilities.json` (keep aligned with `.env`).
 
 #### Session setup
