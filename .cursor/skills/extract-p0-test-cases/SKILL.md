@@ -36,7 +36,7 @@ Use paths with your configured `<app_slug>` (current app: `cofee`):
 
 If neither a context file nor a flow doc section covers the requested
 feature, mark it **"Not in docs — confirm with user"** — or run
-`author-mobile-flow-docs` first. Never invent flows, steps, or element labels.
+`get-context` first. Never invent flows, steps, or element labels.
 Locators are out of scope here (AGENTS.md + `discover-mobile-locators`).
 
 ---
@@ -45,7 +45,7 @@ Locators are out of scope here (AGENTS.md + `discover-mobile-locators`).
 
 | # | Rule |
 |---|------|
-| 1 | **Context/flow doc is read-only** — never edit it here; if it's wrong, send the user back to `get-context` or `author-mobile-flow-docs`. |
+| 1 | **Context/flow doc is read-only** — never edit it here; if it's wrong, send the user back to `get-context`. |
 | 2 | **No hallucination** — mark anything not confirmed by the source doc as `[Assumption]`; never invent element labels, error copy, or business rules. |
 | 3 | **Device-observable steps** — every step is a physical action (tap X, type Y, observe Z) — never "call the API" or "check the database." |
 | 4 | **Locators are the next skill's job** — this skill records *what to test*, not *how to locate it*. Only carry over a locator if the context file already marked it live-confirmed; otherwise leave it for `discover-mobile-locators`/`mobile-appium-python`. |
@@ -178,6 +178,5 @@ subset (user approval required).
 
 ## Related skills
 
-`get-context` · `author-mobile-flow-docs` · `discover-mobile-locators` ·
-`automate-a-flow` · `mobile-appium-python` ·
-[testcase-template.md](testcase-template.md)
+`get-context` · `discover-mobile-locators` · `automate-a-flow` ·
+`mobile-appium-python` · [testcase-template.md](testcase-template.md)

@@ -79,4 +79,4 @@ CLI overrides: `--env`, `--platform`, `--device`, `--headless-emulator`,
 ## Related skills
 
 `automate-a-flow` · `discover-mobile-locators` · `setup-mobile-test-data` ·
-`read-test-reports` · `review-changes` · [AGENTS.md](../../../AGENTS.md)
+`read-test-reports` · `pr-review-changes` · [AGENTS.md](../../../AGENTS.md)

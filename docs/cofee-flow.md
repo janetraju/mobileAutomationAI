@@ -82,6 +82,11 @@ UI dump XMLs are local/temporary — do not commit them. Locators live in page o
 | Duplicate group name | Use runtime-unique name in test data |
 | Login required | Reuse `user_ensures_logged_in_home` after P0-01 in same session |
 | `Fee Collection Start Date` pre-filled | Leave default unless test requires change |
+| Post-OTP screen can briefly linger | Accept only `home`/`org` as success — don't treat a lingering OTP screen as a pass |
+| Org → home transition | Continue button is left-biased (debug FAB overlaps right side); "home" means CoFee's own nav (`Groups`/`Payments`), not the Android launcher |
+| Onboarding carousel reappears after `pm clear` | Prefer seeding `hasIntroScreenShown` directly rather than tapping through the carousel each time |
+| Create group tile locator | Use `ACCESSIBILITY_ID` / `descriptionMatches` for **Add New** / **Create group** — plain text match is unreliable |
+| Member fee assertion | Indian currency formatting + embedded newlines in the accessibility label — match with one `descriptionMatches("(?s).*…*")`, not a plain equality check |
 
 ## Test data
 

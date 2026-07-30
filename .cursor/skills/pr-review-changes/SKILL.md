@@ -1,5 +1,5 @@
 ---
-name: review-changes
+name: pr-review-changes
 description: >-
   Code review against AGENTS.md Repo contract for Appium mobile automation.
   Use when reviewing PRs or local changes. Does not redefine repo rules —

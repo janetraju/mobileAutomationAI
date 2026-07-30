@@ -114,7 +114,7 @@ code. See **`automate-a-flow` Step 5**.
 | Screenshot / page source / logcat / report gaps | This skill |
 | Locator timeout | `discover-mobile-locators` Known pitfalls |
 | Login / session / emulator | `mobile-appium-python`, `automate-a-flow` |
-| Layer import violation | `review-changes`, `mobile-appium-python` |
+| Layer import violation | `pr-review-changes`, `mobile-appium-python` |
 
 Append dated bullets under **Known pitfalls** so the next agent does not repeat
 the mistake.

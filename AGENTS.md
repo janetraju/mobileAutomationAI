@@ -212,7 +212,6 @@ above.
 | Skill | Role | Output / handoff |
 |-------|------|------------------|
 | `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
-| `author-mobile-flow-docs` | Fallback intake → flow doc | `docs/<app_slug>-flow.md` |
 | `extract-p0-test-cases` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
 | `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` | Test data ready |
@@ -228,7 +227,7 @@ editing an existing layer or debugging locators/markers.
 | Skill | When to use |
 |-------|-------------|
 | `read-test-reports` | Generate Allure HTML and triage failures |
-| `review-changes` | Review against this **Repo contract** before merge |
+| `pr-review-changes` | Review against this **Repo contract** before merge |
 | `author-pr-description` | Draft PR body from real branch diff |
 
 ### Pipeline
@@ -241,9 +240,6 @@ get-context
   → setup-mobile-test-data
   → automate-a-flow
   → mobile-appium-python
-
-# Fallback (no get-context this session)
-author-mobile-flow-docs → extract-p0-test-cases → (same from discover onward)
 
 # New product (not in APP_REGISTRY / slug folders)
 get-context Phase 0 asks for APK/IPA → wires repo → then same preferred pipeline

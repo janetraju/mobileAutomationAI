@@ -278,9 +278,7 @@ get-context
   → mobile-appium-python
 ```
 
-Optionally refresh `docs/<app_slug>-flow.md` from this context (user approval) —
-do **not** re-run `author-mobile-flow-docs` as a full discovery pass; that skill
-is only the fallback when `get-context` was not used.
+Optionally refresh `docs/<app_slug>-flow.md` from this context (user approval).
 
 Live session in `discover-mobile-locators` confirms every 🟡 hypothesis —
 this skill never writes to `src/page_objects/`.
