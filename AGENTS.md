@@ -245,7 +245,7 @@ editing an existing layer or debugging locators/markers.
 |-------|-------------|
 | `read-test-reports` | Generate Allure HTML and triage failures |
 | `pr-review-changes` | Review against this **Repo contract** before merge |
-| `author-pr-description` | Draft PR body from real branch diff |
+| `add-pr-description` | Draft PR body from real branch diff |
 
 ### Pipeline
 

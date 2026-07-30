@@ -1,4 +1,4 @@
-# Author PR Description
+# Add PR Description
 
 Generate or update a reviewer-friendly pull request description from the current branch.
 

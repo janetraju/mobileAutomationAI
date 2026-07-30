@@ -12,7 +12,7 @@ Use this skill when:
 - Validating new page objects, actions, steps, dataproviders, or tests
 - Checking automation work before merge
 
-For PR description drafting, use **`author-pr-description`** instead.
+For PR description drafting, use **`add-pr-description`** instead.
 
 ## Workflow
 
@@ -79,6 +79,6 @@ Reference the **AGENTS.md** section for each finding.
 
 ## Related Skills
 
-- `author-pr-description`
+- `add-pr-description`
 - `testscript-generator`
 - `automate-a-flow`

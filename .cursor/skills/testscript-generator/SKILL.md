@@ -169,7 +169,7 @@ Depending on the workflow:
 
 - Run the automated tests
 - Update the flow documentation
-- Generate a PR using `author-pr-description`
+- Generate a PR using `add-pr-description`
 
 ## Related Skills
 

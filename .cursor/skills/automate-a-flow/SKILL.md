@@ -209,7 +209,7 @@ testscript-generator
       ↓
 read-test-reports
       ↓
-author-pr-description
+add-pr-description
 ```
 
 ---
@@ -221,6 +221,6 @@ author-pr-description
 - `discover-mobile-locators`
 - `testscript-generator`
 - `read-test-reports`
-- `author-pr-description`
+- `add-pr-description`
 - `pr-review-changes`
 - `AGENTS.md`
