@@ -1,3 +1,12 @@
+---
+name: get-context
+description: >-
+  Collects feature context from PRDs, Figma, screenshots, product repos, and
+  walkthroughs; bootstraps new apps when needed. Outputs
+  docs/context/<app_slug>-<feature>-context.md. Use when gathering context for
+  a new feature, onboarding a new app, starting test design, or refreshing
+  requirements before testcase generation or automation.
+---
 # Get Context
 
 Collect feature context from available product artifacts and generate a discovery document for downstream test design and automation.

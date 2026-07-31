@@ -11,7 +11,6 @@ description: >-
   P0/smoke cases, test cases for a feature, or "which flows to automate
   first." Presents a draft in chat and requires approval before writing
   docs/context/<app_slug>-<feature>-testcases.md.
-disable-model-invocation: true
 ---
 # Extract Test Cases
 

@@ -1,3 +1,11 @@
+---
+name: pr-review-changes
+description: >-
+  Reviews automation diffs for compliance with AGENTS.md—layer boundaries,
+  locator policy, waits, markers, and code quality. Use when reviewing pull
+  requests, local branch changes, or validating page objects, actions, steps,
+  dataproviders, or tests before merge.
+---
 # Review Changes
 
 Review automation diffs for compliance with the repo contract in **AGENTS.md**.

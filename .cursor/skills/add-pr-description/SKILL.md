@@ -1,3 +1,10 @@
+---
+name: add-pr-description
+description: >-
+  Drafts reviewer-friendly pull request descriptions from actual commits and
+  diffs. Use when creating or updating a PR, preparing gh pr create, or when
+  the user asks for a PR description or summary of branch changes.
+---
 # Add PR Description
 
 Generate or update a reviewer-friendly pull request description from the current branch.

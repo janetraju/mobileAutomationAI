@@ -1,3 +1,11 @@
+---
+name: testscript-generator
+description: >-
+  Authors and maintains Page Objects, Actions, Steps, Data Providers, and Tests
+  following the four-layer POM. Use when writing or editing automation layers,
+  fixing flaky tests or locators, or updating automation after UI changes. For
+  full feature automation from scratch, prefer automate-a-flow.
+---
 # Testscript Generator
 
 Implement and maintain the mobile automation framework by authoring Page Objects, Actions, Steps, Data Providers, and Tests.

@@ -1,3 +1,12 @@
+---
+name: automate-a-flow
+description: >-
+  Orchestrates an approved mobile test scenario into end-to-end Pytest+Appium
+  automation—validates prerequisites, verifies flows on device, and coordinates
+  locator discovery and layer implementation. Use when the user asks to automate
+  a feature or flow, or when starting a new E2E scenario with approved test
+  cases.
+---
 # Automate a Flow
 
 Orchestrate an approved test scenario into end-to-end mobile automation.

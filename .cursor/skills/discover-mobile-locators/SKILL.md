@@ -1,3 +1,11 @@
+---
+name: discover-mobile-locators
+description: >-
+  Captures and verifies UI locators from a running app via ui:dump and Appium
+  MCP; defines locator priority, PO naming, and dump paths. Use when creating
+  page objects, adding test scenarios, fixing stale locators, refreshing UI
+  dumps, or when the user mentions locators, selectors, or UI inspection.
+---
 # Capture UI Locators
 
 Capture and verify UI locators from a **running application** using `ui:dump`
