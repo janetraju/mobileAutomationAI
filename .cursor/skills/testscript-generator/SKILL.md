@@ -127,11 +127,7 @@ invoke lint
 invoke test --markers "<feature markers>"
 ```
 
-When a P0 scenario is automated, update the automation status in:
-
-```
-docs/<app_slug>-flow.md
-```
+When a P0 scenario is automated, update status in `docs/<app_slug>-flow.md` — see **`automate-a-flow`** Step 6 (that skill owns the gate).
 
 ---
 
@@ -165,23 +161,9 @@ Depending on the requested work, create or update:
 ## Rules
 
 - Follow all framework conventions defined in `AGENTS.md`.
-- Never access `driver.find_element()` outside Page Objects.
-- Tests should interact only with Steps.
-- Steps should interact only with Actions.
-- Actions should interact only with Page Objects.
-- Never use `time.sleep()`; use the project's wait utilities.
 
 ## Next Steps
 
-Depending on the workflow:
+Depending on the workflow: run tests → `read-test-reports` for failures → update flow doc via `automate-a-flow` Step 6 → `add-pr-description` / `pr-review-changes`.
 
-- Run the automated tests
-- Update the flow documentation
-- Generate a PR using `add-pr-description`
-
-## Related Skills
-
-- `automate-a-flow`
-- `discover-mobile-locators`
-- `read-test-reports`
-- `pr-review-changes`
+Related: `automate-a-flow`, `discover-mobile-locators`.

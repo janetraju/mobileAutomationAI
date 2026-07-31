@@ -132,8 +132,6 @@ Do not make additional changes without user approval.
 
 ### Step 5 — Next Steps
 
-Recommended workflow:
-
 ```text
 discover-mobile-locators
         ↓
@@ -142,7 +140,7 @@ automate-a-flow
 testscript-generator
 ```
 
-Optionally offer to update the feature's priority matrix in the flow document.
+Prerequisite: `get-context`. Template: `testcase-template.md`. Optionally offer to update the feature's priority matrix in the flow document.
 
 ## Rules
 
@@ -152,11 +150,3 @@ Optionally offer to update the feature's priority matrix in the flow document.
 - Never write the output file before explicit approval.
 - Avoid web-only concepts such as `data-testid`, routes, or RTK.
 - Check existing automation before marking coverage complete.
-
-## Related Skills
-
-- `get-context`
-- `discover-mobile-locators`
-- `automate-a-flow`
-- `testscript-generator`
-- `testcase-template.md`

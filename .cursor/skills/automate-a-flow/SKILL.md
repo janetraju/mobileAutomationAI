@@ -111,25 +111,7 @@ Do not begin implementation until the live walkthrough is complete.
 
 ### Step 4 — Implement the Automation
 
-Hand off implementation to:
-
-```text
-testscript-generator
-```
-
-Standard implementation order:
-
-```text
-Page Objects
-      ↓
-Actions
-      ↓
-Steps
-      ↓
-Data Provider
-      ↓
-Tests
-```
+Hand off implementation to `testscript-generator` (layer order in its Step 2).
 
 Reuse existing framework components whenever possible.
 
@@ -199,11 +181,7 @@ If implementation uncovers reusable framework or process improvements:
 
 ## Output
 
-Depending on the scenario:
-
-- Updated Page Objects / Actions / Steps / Data Providers / Tests  
-- **`docs/<app_slug>-flow.md` updated** — Status row with **ID** + **Done** + test path; **Flows** section if the feature is new  
-- Skill / quirk notes when something reusable was learned  
+Depending on the scenario: updated PO / actions / steps / dataprovider / tests; flow doc per Step 6; skill or quirk notes per Step 7.
 
 ---
 
@@ -214,7 +192,6 @@ Depending on the scenario:
 - Reuse existing framework components whenever possible.
 - Do not redefine repository conventions from `AGENTS.md`.
 - Avoid introducing unnecessary waits to fix unstable tests.
-- After a passing new scenario, **always** refresh the flow doc: real **ID**, **Done** + test path, and **Flows** text when needed.
 
 ---
 
@@ -237,24 +214,13 @@ docs/<app_slug>-flow.md
 ## Next Steps
 
 ```text
-automate-a-flow
-      ↓
 testscript-generator
       ↓
 read-test-reports
       ↓
 add-pr-description
+      ↓
+pr-review-changes
 ```
 
----
-
-## Related Skills
-
-- `get-context`
-- `testcase-generator`
-- `discover-mobile-locators`
-- `testscript-generator`
-- `read-test-reports`
-- `add-pr-description`
-- `pr-review-changes`
-- `AGENTS.md`
+Prerequisites: `get-context`, `testcase-generator`, `discover-mobile-locators`. Repo contract: `AGENTS.md`.

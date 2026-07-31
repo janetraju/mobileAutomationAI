@@ -30,11 +30,7 @@ Generate:
 docs/context/<app_slug>-<feature-slug>-context.md
 ```
 
-Commit this file. It serves as the discovery record for:
-
-- `testcase-generator`
-- `discover-mobile-locators`
-- `testscript-generator`
+Commit this file. It serves as the discovery record for downstream skills (see Step 7).
 
 ## Supported Sources
 
@@ -130,10 +126,8 @@ For Figma screenshots without a link, inspect the image directly.
 
 Determine the feature slug.
 
-Review:
+Review application source and existing flow documentation (see **Supported Sources**), plus:
 
-- Application source
-- Existing flow documentation
 - Existing Page Objects
 - Existing tests
 
@@ -176,13 +170,7 @@ Limit follow-up questions to **3–6**.
 
 ## Step 6 — Generate the Context Document
 
-Create:
-
-```text
-docs/context/<app_slug>-<feature-slug>-context.md
-```
-
-Include:
+Create the file at the path in **Output**. Include:
 
 | Section | Description |
 |---------|-------------|
@@ -245,13 +233,3 @@ All locator hypotheses must be validated in `discover-mobile-locators`.
 - Ask the intake questions only once per session unless the user requests a restart.
 - Never commit application source or APK files.
 - Reference `AGENTS.md` for repository-wide conventions.
-
----
-
-## Related Skills
-
-- `testcase-generator`
-- `discover-mobile-locators`
-- `automate-a-flow`
-- `testscript-generator`
-- `AGENTS.md`
