@@ -10,8 +10,8 @@ locators, waits, assertions, markers, stability).
 
 Skills under `.cursor/skills/` are **task workflows only** — they must not
 redefine those rules. Before authoring or reviewing tests, read `AGENTS.md`;
-then open the skill for the specific action (`automate-a-flow`,
-`testscript-generator`, `discover-mobile-locators`, etc.).
+then open the skill for the specific action (`testscript-generator`,
+`discover-mobile-locators`, etc.).
 
 ## Always enforce (summary — details in AGENTS.md)
 

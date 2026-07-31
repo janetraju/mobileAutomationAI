@@ -207,12 +207,11 @@ above.
 | `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
 | `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
-| `automate-a-flow` | Orchestrate one approved scenario (test data source decided in its Step 1) | Working E2E for one flow |
-| `testscript-generator` | Write/edit layer files; flaky fixes | Layered automation files |
+| `testscript-generator` | Orchestrate **and** implement one approved scenario end-to-end (test data source decided in its Step 1); also the skill for writing/editing layer files or fixing flaky tests on their own | Working E2E for one flow / layered automation files |
 
-`automate-a-flow` = orchestration. `testscript-generator` = layer authoring.
-Prefer `automate-a-flow` for “automate this”; use `testscript-generator` when
-editing an existing layer or debugging locators/markers.
+Use `testscript-generator` for anything from "automate this feature" to
+editing a single existing layer file or debugging a locator/marker — it's
+one skill covering the full path from prerequisites through implementation.
 
 ### Supporting (any time)
 
@@ -229,7 +228,6 @@ editing an existing layer or debugging locators/markers.
 get-context
   → testcase-generator
   → discover-mobile-locators
-  → automate-a-flow
   → testscript-generator
 
 # New product (not in APP_REGISTRY / slug folders)
@@ -250,7 +248,7 @@ get-context Phase 0 asks for APK/IPA → wires repo → then same preferred pipe
 **Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.  
 **Enable:** Restart Cursor / reload MCP → toggle **appium-mcp**.
 
-Walkthrough steps: **`automate-a-flow`** and **`discover-mobile-locators`**.
+Walkthrough steps: **`testscript-generator`** and **`discover-mobile-locators`**.
 Screenshots → `target/mcp-screenshots/` when `NO_UI=true`.
 
 ### Figma MCP
@@ -261,8 +259,7 @@ Design copy only — confirm locators via live dump. See **`get-context`**.
 
 ## Adding a feature (code order)
 
-Use **`automate-a-flow`** for the full workflow. File order (patterns in
-`testscript-generator`):
+Use **`testscript-generator`** for the full workflow, including file order:
 
 1. `src/page_objects/cofee/<screen>_po.py`
 2. `src/page_actions/cofee/<screen>_actions.py`

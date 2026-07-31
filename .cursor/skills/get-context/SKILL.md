@@ -100,7 +100,7 @@ Record each source as:
 - Not Available
 
 **Credentials** answered here isn't used by this skill directly — it's
-recorded for `automate-a-flow`'s Step 1 login check. OTP strategy reference
+recorded for `testscript-generator`'s Step 1 login check. OTP strategy reference
 and the security rules live in `AGENTS.md` → Test data & credentials, not
 here. "Not set up yet" is a valid answer — this skill never blocks on it,
 same as PRD/Figma/Jira.
@@ -203,9 +203,8 @@ testcase-generator
       ↓
 discover-mobile-locators
       ↓
-automate-a-flow          (test data source decided in its Step 1)
-      ↓
-testscript-generator
+testscript-generator     (test data source decided in its Step 1;
+                          orchestrates and implements the scenario)
 ```
 
 All locator hypotheses must be validated in `discover-mobile-locators`.

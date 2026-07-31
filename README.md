@@ -93,7 +93,7 @@ Each pytest run wipes `target/allure-results` (`--clean-alluredir`), so reports
 match the last run only.
 
 **New feature order:** page object → actions → steps → dataprovider → test  
-(`AGENTS.md` / `mobile-appium-python` skill).
+(`AGENTS.md` / `testscript-generator` skill).
 
 ---
 

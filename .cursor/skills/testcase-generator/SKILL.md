@@ -135,8 +135,6 @@ Do not make additional changes without user approval.
 ```text
 discover-mobile-locators
         ↓
-automate-a-flow
-        ↓
 testscript-generator
 ```
 

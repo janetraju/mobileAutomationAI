@@ -89,4 +89,3 @@ Reference the **AGENTS.md** section for each finding.
 
 - `add-pr-description`
 - `testscript-generator`
-- `automate-a-flow`

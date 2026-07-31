@@ -18,7 +18,7 @@ Use this skill when:
 
 - Generating or opening an Allure report (`invoke report`)
 - Debugging a failed E2E run from attachments
-- Triage after `automate-a-flow` verification fails
+- Triage after `testscript-generator` verification fails
 
 ## Workflow
 
@@ -68,10 +68,10 @@ Attachments come from `conftest.py` on failure — no per-test screenshot code n
 | ---------------- | ------ |
 | Report / attachment gaps | This skill |
 | Locator timeout | `discover-mobile-locators` |
-| Login / session / emulator | `automate-a-flow`, `testscript-generator` |
+| Login / session / emulator | `testscript-generator` |
 | Layer import violation | `pr-review-changes`, `testscript-generator` |
 
-See **`automate-a-flow`** Step 6 for the full update-skills policy.
+See **`testscript-generator`** Step 8 for the full update-skills policy.
 
 ### Step 5 — Record Learnings
 
@@ -95,7 +95,6 @@ Skip only for one-off environment issues (e.g. device unplugged).
 
 ## Related Skills
 
-- `automate-a-flow`
 - `testscript-generator`
 - `discover-mobile-locators`
 - `pr-review-changes`

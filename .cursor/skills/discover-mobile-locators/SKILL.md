@@ -138,7 +138,7 @@ PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobil
 
 ### Step 6 — Hand Off
 
-→ `testscript-generator` or `automate-a-flow` (do **not** author `*_po.py` in this skill).
+→ `testscript-generator` (do **not** author `*_po.py` in this skill).
 
 ## Rules
 
@@ -148,4 +148,4 @@ PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobil
 
 ## Related Skills
 
-`automate-a-flow` · `get-context` · `testscript-generator` · [AGENTS.md](../../../AGENTS.md)
+`testscript-generator` · `get-context` · [AGENTS.md](../../../AGENTS.md)
