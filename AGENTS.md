@@ -7,12 +7,14 @@ framework configured for **CoFee** (`APP_SLUG=cofee`).
 
 | Document | Owns |
 |----------|------|
-| **`AGENTS.md` (this file)** | Always-on **repo contract** — architecture, layers, locators, waits, assertions, stability, markers |
-| **`.cursor/skills/*/SKILL.md`** | **Task workflows only** — how to perform one action (intake, dump, automate, review) |
+| **`AGENTS.md` (this file)** | Always-on **repo contract** — architecture, layers, waits, assertions, stability, markers; locator *policy* (never invent; confirm live) |
+| **`discover-mobile-locators`** | Locator **priority, naming, dumps** + dump/MCP workflow |
+| **Other `.cursor/skills/*/SKILL.md`** | Task workflows only — do not restate repo contract |
 | **`.cursor/rules/testscript-generator.mdc`** | Short always-apply pointer to this contract |
 
-Skills must **not** restate layer rules, locator priority, wait policy, or markers.
-They should say: *follow `AGENTS.md` Repo contract*, then describe their own steps.
+Skills must **not** restate layer rules, wait policy, or markers. For locator
+priority/naming, follow **`discover-mobile-locators`** (referenced under Locator
+strategy below).
 
 ---
 
@@ -107,38 +109,11 @@ Import direction: **tests → steps → page_actions → page_objects → core**
 
 ### Locator strategy
 
-**Priority (highest first):**
+**Never invent locators.** Screenshots, Figma, and product source are flow/spec
+only — confirm every selector on a running app before treating a PO as final.
 
-1. `AppiumBy.ACCESSIBILITY_ID` / content-desc
-2. Android `ANDROID_UIAUTOMATOR` / resource-id
-3. iOS `IOS_PREDICATE` / `IOS_CLASS_CHAIN`
-4. Text / label
-5. XPath — last resort; justify in a comment
-
-**Never invent locators.** Screenshots, Figma, and product/source code are
-**flow/spec** only. Confirm every selector on a running app (`invoke ui:dump`
-and/or Appium MCP) before treating a PO as final.
-
-**Naming (PO fields):**
-
-| Prefix | Kind | Example |
-|--------|------|---------|
-| `btn_` | Button / CTA | `btn_continue` |
-| `input_` | Text field | `input_mobile` |
-| `txt_` | Static label | `txt_title` |
-| `msg_` | Error / toast | `msg_whitelist_error` |
-| `chk_` | Checkbox / switch | `chk_terms` |
-| `ddl_` | Dropdown | `ddl_org` |
-| `lnk_` | Link | `lnk_view_payments` |
-| `icn_` | Icon-only | `icn_kebab_menu` |
-| `tab_` | Tab | `tab_groups` |
-| `card_` | Card / list row | `card_member` |
-
-Private attrs: `self._<prefix><name>_<strategy>` (`_acc`, `_uia`, `_ios`, `_text`, `_xpath`).  
-Public API: `find_<prefix><name>()` → element; `loc_<prefix><name>()` → `(by, value)` for waits.  
-Do **not** put strategy suffixes on `find_*` / `loc_*`.
-
-UI dumps: `docs/locators/<screen>.xml` — **local only** (gitignored); do not commit.
+**Full priority order, PO naming (`btn_` / `find_*` / `loc_*`), and dump paths:**
+see skill **`discover-mobile-locators`**.
 
 ### Wait & stability
 

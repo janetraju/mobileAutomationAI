@@ -1,8 +1,10 @@
 # Capture UI Locators
 
-Capture and verify UI locators from a **running application** using `ui:dump` and Appium MCP.
+Capture and verify UI locators from a **running application** using `ui:dump`
+and Appium MCP.
 
-This skill is responsible only for capturing and validating locators. Locator priority, naming conventions, and Page Object patterns are defined in `AGENTS.md`.
+**Owns:** locator priority, PO naming, dump paths, and the dump/MCP workflow.  
+**Repo contract (layers, waits, markers):** [AGENTS.md](../../../AGENTS.md).
 
 ## When to Use
 
@@ -14,13 +16,59 @@ Use this skill when:
 - Refreshing stale UI dumps
 - Working with Flutter, React Native, or hybrid applications
 
-> Product source, APK analysis, and Figma can provide candidate locators, but **every locator must be verified on a live application**.
+> Product source, APK analysis, and Figma can provide candidate locators, but
+> **every locator must be verified on a live application**.
+
+---
+
+## Locator strategy (source of truth)
+
+### Priority (highest first)
+
+1. `AppiumBy.ACCESSIBILITY_ID` / content-desc  
+2. Android `ANDROID_UIAUTOMATOR` / resource-id  
+3. iOS `IOS_PREDICATE` / `IOS_CLASS_CHAIN`  
+4. Text / label  
+5. XPath — last resort; justify in a comment  
+
+### Naming (PO fields)
+
+| Prefix | Kind | Example |
+|--------|------|---------|
+| `btn_` | Button / CTA | `btn_continue` |
+| `input_` | Text field | `input_mobile` |
+| `txt_` | Static label | `txt_title` |
+| `msg_` | Error / toast | `msg_whitelist_error` |
+| `chk_` | Checkbox / switch | `chk_terms` |
+| `ddl_` | Dropdown | `ddl_org` |
+| `lnk_` | Link | `lnk_view_payments` |
+| `icn_` | Icon-only | `icn_kebab_menu` |
+| `tab_` | Tab | `tab_groups` |
+| `card_` | Card / list row | `card_member` |
+
+Private attrs: `self._<prefix><name>_<strategy>` (`_acc`, `_uia`, `_ios`, `_text`, `_xpath`).  
+Public API: `find_<prefix><name>()` → element; `loc_<prefix><name>()` → `(by, value)` for waits.  
+Do **not** put strategy suffixes on `find_*` / `loc_*`.
+
+### Dumps
+
+`docs/locators/<screen>.xml` — **local only** (gitignored); do not commit.  
+iOS: `docs/locators/<screen>_ios.xml`.
+
+### Preference by app type
+
+| APP_TYPE | Preferred locator |
+|----------|-------------------|
+| `flutter` | `content-desc` / Semantics |
+| `rn` | `testID` / `accessibilityLabel` |
+| `hybrid` | Native hierarchy (WebView only when required) |
+| `native` | `resource-id` |
+
+---
 
 ## Workflow
 
 ### Step 1 — Prepare the Environment
-
-Run:
 
 ```bash
 invoke appium:doctor
@@ -28,70 +76,26 @@ invoke emulator:start        # or connect a physical device
 invoke app:install           # uses APP_PATH from .env
 ```
 
-Verify the following values in `.env`:
-
-- `APP_SLUG`
-- `APP_TYPE`
-- `PLATFORM`
-- `APP_PACKAGE`
-- `APP_ACTIVITY`
-
-Ensure `environment/appium-mcp.capabilities.json` matches the `.env` configuration.
-
----
+Verify in `.env`: `APP_SLUG`, `APP_TYPE`, `PLATFORM`, `APP_PACKAGE`, `APP_ACTIVITY`.  
+Keep `environment/appium-mcp.capabilities.json` aligned with `.env`.
 
 ### Step 2 — Capture Static UI Dumps
 
-Launch the application:
-
 ```bash
 adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
+invoke ui:dump --screen=<screen_name>   # → docs/locators/<screen_name>.xml
 ```
 
-Capture the current screen:
-
-```bash
-invoke ui:dump --screen=<screen_name>
-```
-
-This creates:
-
-```
-docs/locators/<screen_name>.xml
-```
-
-Repeat for each screen in the flow.
-
-Do **not** commit `docs/locators/*.xml`.
-
----
+Repeat per screen. Do **not** commit the XML files.
 
 ### Step 3 — Walk the Flow with Appium MCP
 
-This step is **mandatory** for every new test scenario.
+**Mandatory** for every new test scenario.
 
-Create a session:
-
-- `select_device`
-- `appium_session_management (action=create)`
-
-Walk through the application using:
-
-- `appium_gesture`
-- `appium_set_value`
-- `appium_find_element`
-
-For each screen:
-
-1. Capture a screenshot.
-2. Retrieve the page source.
-3. Save the XML dump to `docs/locators/<screen>.xml`.
-4. Run `generate_locators`.
-5. Verify every generated locator against both:
-   - Page source
-   - Visible UI text
-
-### Common Preconditions
+1. `select_device` → `appium_session_management` (`action=create`)  
+2. Navigate with `appium_gesture` / `appium_set_value` / `appium_find_element`  
+3. Per screen: screenshot → page source → save XML → `generate_locators`  
+4. Confirm every generated locator against page source and visible UI  
 
 | Scenario | Action |
 |----------|--------|
@@ -99,75 +103,41 @@ For each screen:
 | Logged-in session | Reuse the existing session |
 | Downstream flow | Complete login before continuing |
 
-When `NO_UI=true`, screenshots should be stored in:
+Screenshots when `NO_UI=true`: `target/mcp-screenshots/`.
 
-```
-target/mcp-screenshots/
-```
-
----
+Re-dump after animations, keyboard, or navigation.
 
 ### Step 4 — Build the Locator Sheet
 
-Apply the locator priority and naming conventions defined in `AGENTS.md`.
+Apply **Locator strategy** above. Optional sheet:
 
-Optionally document the results in:
-
-```
+```text
 docs/locators/<screen>.md
 ```
-
-Recommended format:
 
 | Page Object | Element | Strategy | Locator | Confirmed |
 |-------------|---------|----------|---------|-----------|
 
-### Locator Preference by App Type
-
-| APP_TYPE | Preferred Locator |
-|----------|-------------------|
-| `flutter` | `content-desc` / Semantics |
-| `rn` | `testID` / `accessibilityLabel` |
-| `hybrid` | Native hierarchy (switch to WebView only when required) |
-| `native` | `resource-id` |
-
-Re-capture dumps whenever:
-
-- animations complete
-- the keyboard changes the layout
-- navigation changes the UI
-
----
+PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobile`).
 
 ### Step 5 — Summarize Findings
 
-Before handing off, provide:
-
-- Screens visited (in order)
-- Confirmed UI text
-- Verified locator strategy for each screen
-- UI quirks or overlays
-- Gaps between the implemented UI and the expected flow
-
----
+- Screens visited (order)  
+- Confirmed UI text  
+- Verified strategy per screen  
+- Quirks / overlays  
+- Gaps vs expected flow  
 
 ### Step 6 — Hand Off
 
-Once the locator sheet is complete, hand off to:
-
-- `testscript-generator`, or
-- `automate-a-flow`
+→ `testscript-generator` or `automate-a-flow` (do **not** author `*_po.py` in this skill).
 
 ## Rules
 
-- Never author Page Object files in this skill.
-- Never rely solely on APK analysis, product source, or Figma.
-- Every locator must be confirmed in a live session.
-- Save iOS dumps as `docs/locators/<screen>_ios.xml`.
-- Never commit generated XML dumps.
+- Never invent locators from APK / product source / Figma alone  
+- Never write Page Object files here  
+- Never commit generated XML dumps  
 
 ## Related Skills
 
-- `automate-a-flow`
-- `get-context`
-- `testscript-generator`
+`automate-a-flow` · `get-context` · `testscript-generator` · [AGENTS.md](../../../AGENTS.md)

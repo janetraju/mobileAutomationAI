@@ -148,16 +148,43 @@ If failures are caused by UI changes, refresh the UI dump rather than introducin
 
 ---
 
-### Step 6 — Capture Reusable Learnings
+### Step 6 — Update flow doc (mandatory when tests pass)
+
+After the new scenario **passes**, update `docs/<app_slug>-flow.md` (for CoFee:
+`docs/cofee-flow.md`) so the board matches reality.
+
+**Status table** — every automated scenario needs a complete row:
+
+| Column | Requirement |
+|--------|-------------|
+| **ID** | Stable id — never blank or `—`. Reuse the approved TC/flow id if one exists; otherwise assign the next free id (`P0-06`, `P1-04`, …) |
+| **Flow** | Short name matching what was automated (include TC ids if useful, e.g. HP-01) |
+| **Status** | `**Done** — \`path/to/test_*.py\`` (or test function name if clearer) |
+
+Also:
+
+1. If the feature is **new**, add a short **Flows** blurb (happy path + variants), same style as Login / Create group / Enable partial payment.  
+2. Keep Not started / deferred cases visible (do not delete P1 rows just because a P0 shipped).  
+3. Do this even if `testscript-generator` also mentions it — **this skill owns the gate**.
+
+**Checklist before finishing:**
+
+```text
+- [ ] Status row has a real ID (not empty)
+- [ ] Status says Done + test path
+- [ ] Flows section mentions the feature (if new or substantially changed)
+```
+
+---
+
+### Step 7 — Capture reusable learnings
 
 If implementation uncovers reusable framework or process improvements:
 
 - Update the appropriate skill documentation.
-- Record application-specific issues in:
-
-```
-docs/<app_slug>-flow.md
-```
+- Record new **application-specific quirks** only if they are not already
+  covered elsewhere (skills / POs); prefer a short note over duplicating
+  long blocker tables.
 
 ---
 
@@ -165,12 +192,9 @@ docs/<app_slug>-flow.md
 
 Depending on the scenario:
 
-- Updated Page Objects
-- Updated Actions
-- Updated Steps
-- Updated Data Providers
-- Updated Tests
-- Updated flow documentation (when applicable)
+- Updated Page Objects / Actions / Steps / Data Providers / Tests  
+- **`docs/<app_slug>-flow.md` updated** — Status row with **ID** + **Done** + test path; **Flows** section if the feature is new  
+- Skill / quirk notes when something reusable was learned  
 
 ---
 
@@ -181,6 +205,7 @@ Depending on the scenario:
 - Reuse existing framework components whenever possible.
 - Do not redefine repository conventions from `AGENTS.md`.
 - Avoid introducing unnecessary waits to fix unstable tests.
+- After a passing new scenario, **always** refresh the flow doc: real **ID**, **Done** + test path, and **Flows** text when needed.
 
 ---
 
