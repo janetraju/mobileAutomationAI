@@ -159,4 +159,4 @@ Return the PR URL after completion.
 
 - `pr-review-changes`
 - `testscript-generator`
-- `read-test-reports`
+- `generate-test-reports`

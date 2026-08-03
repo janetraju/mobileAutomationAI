@@ -216,7 +216,7 @@ one skill covering the full path from prerequisites through implementation.
 
 | Skill | When to use |
 |-------|-------------|
-| `read-test-reports` | Generate Allure HTML and triage failures |
+| `generate-test-reports` | Generate Allure HTML and triage failures |
 | `pr-review-changes` | Review against this **Repo contract** before merge |
 | `add-pr-description` | Draft PR body from real branch diff |
 
