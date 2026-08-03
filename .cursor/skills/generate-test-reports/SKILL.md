@@ -1,5 +1,5 @@
 ---
-name: read-test-reports
+name: generate-test-reports
 description: >-
   Generates Allure HTML from pytest results and triages failures using
   screenshots, page source, and logcat. Use when debugging failed E2E runs,
