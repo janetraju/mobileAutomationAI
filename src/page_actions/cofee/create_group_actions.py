@@ -156,13 +156,9 @@ class CreateGroupActions(PageActions):
         ``Weekly: Monday`` (dayOfWeekLabels).
         """
         self.wait_for_element_visible(self._group_po.loc_schedule_payment_title(), timeout=10)
-        monthly = self.wait_for_element_visible(
-            self._group_po.loc_frequency_monthly(), timeout=10
-        )
+        monthly = self.wait_for_element_visible(self._group_po.loc_frequency_monthly(), timeout=10)
         self._adb_tap_element(monthly, x_ratio=0.5)
-        weekly = self.wait_for_element_visible(
-            self._group_po.loc_frequency_weekly(), timeout=5
-        )
+        weekly = self.wait_for_element_visible(self._group_po.loc_frequency_weekly(), timeout=5)
         self._adb_tap_element(weekly, x_ratio=0.5)
         # Wait for weekly chip grid (default selection is Sun) before tapping Mon
         self.wait_for_element_visible(self._group_po.loc_chip_sun(), timeout=10)

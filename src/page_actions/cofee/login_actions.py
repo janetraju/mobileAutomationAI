@@ -39,9 +39,7 @@ class LoginActions(PageActions):
         for `loc_btn_next` time out with no useful error.
         """
         try:
-            cancel = self._wait(3).until(
-                lambda _: self._login_po.find_gms_phone_hint_cancel()
-            )
+            cancel = self._wait(3).until(lambda _: self._login_po.find_gms_phone_hint_cancel())
             self.tap(cancel)
             self.wait_for_element_gone(self._login_po.loc_gms_phone_hint_cancel(), timeout=3)
         except TimeoutException:
@@ -180,7 +178,11 @@ class LoginActions(PageActions):
             digit_count = sum(c.isdigit() for c in self._read_text_safe())
             if digit_count >= expected_length:
                 return
-            subprocess.run(["adb", "shell", "input", "text", digit], check=False, capture_output=True)
+            subprocess.run(
+                ["adb", "shell", "input", "text", digit],
+                check=False,
+                capture_output=True,
+            )
             time.sleep(0.15)
 
     def _tap_primary_cta(self, element) -> None:
@@ -250,8 +252,6 @@ class LoginActions(PageActions):
         """Enter OTP, handle optional account picker, wait for home."""
         self.enter_otp(otp)
         self.submit_otp()
-        if self.is_home_screen_visible(timeout=5):
-            return
         if self.is_account_picker_visible(timeout=20):
             self.select_account_and_continue()
             self.dismiss_debug_overlay_if_visible()

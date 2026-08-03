@@ -32,7 +32,9 @@ class LoginPo(BasePage):
         # an android.widget.ImageView). Constrain by class to target the row.
         self._account_individual_uia = (
             AppiumBy.ANDROID_UIAUTOMATOR,
-            'new UiSelector().className("android.widget.ImageView").descriptionContains("Individual")',
+            "new UiSelector()"
+            '.className("android.widget.ImageView")'
+            '.descriptionContains("Individual")',
         )
         self._tab_home_acc = (AppiumBy.ACCESSIBILITY_ID, "Home")
         self._account_welcome_uia = (

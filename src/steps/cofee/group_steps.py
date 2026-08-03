@@ -84,6 +84,4 @@ def user_creates_and_verifies_group_from_home(
         amount,
         fee_schedule=fee_schedule,
     )
-    user_verifies_group_detail(
-        driver, group_name, member_name, formatted_fee
-    )
+    user_verifies_group_detail(driver, group_name, member_name, formatted_fee)

@@ -119,7 +119,7 @@ def install_precommit(c):
 @task(name="emulator:start")
 def emulator_start(c, avd=None, headless=False):
     """Start Android emulator and wait until it is ready (requires ANDROID_HOME)."""
-    avd_name = avd or os.environ.get("AVD_NAME", "Pixel_10")
+    avd_name = avd or os.environ.get("AVD_NAME", "Pixel_7_API_34")
     use_headless = headless or os.environ.get("HEADLESS", "false").lower() == "true"
     emu = _emulator_bin()
     args = [str(emu), "-avd", avd_name, "-no-snapshot-load"]

@@ -16,7 +16,7 @@ pytestmark = [pytest.mark.xdist_group(PARALLEL_GROUP_AUTH)]
 @allure.feature("Login")
 @pytest.mark.e2e
 @pytest.mark.p0
-@pytest.mark.android
+@pytest.mark.login
 @pytest.mark.auth_profile("default")
 class TestLogin:
     """Phone + OTP login scenarios."""
