@@ -174,7 +174,7 @@ invoke test --markers "<feature>"
 invoke test --markers "e2e and p0"
 ```
 
-Review the results using `read-test-reports`.
+Review the results using `generate-test-reports`.
 
 If failures are caused by UI changes, refresh the UI dump rather than introducing additional waits.
 
@@ -270,7 +270,7 @@ docs/<app_slug>-flow.md
 ```text
 testscript-generator
       ↓
-read-test-reports
+generate-test-reports
       ↓
 add-pr-description
       ↓
