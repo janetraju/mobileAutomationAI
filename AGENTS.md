@@ -80,7 +80,7 @@ docs/cofee-flow.md         # Product flows — read before authoring tests
 docs/locators/             # UI dumps per screen (local; gitignored *.xml)
 docs/context/              # Feature context + approved testcases
 environment/               # Per-env .properties overrides
-scripts/                   # Emulator / Appium / install / dump helpers
+tasks.py                   # invoke tasks (emulator, install, dump, test, report)
 ```
 
 ---
