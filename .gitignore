@@ -25,13 +25,10 @@ htmlcov/
 .coverage
 *.log
 
-# Mobile binaries and UI dumps (local only)
+# Mobile binaries (local only)
 *.apk
 *.ipa
 *.aab
-docs/locators/*.xml
-!docs/locators/.gitkeep
-!docs/locators/README.md
 
 # Product source used as local flow context (do not push into automation repo)
 builds/cofee-app-develop/

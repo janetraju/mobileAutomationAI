@@ -7,12 +7,14 @@ framework configured for **CoFee** (`APP_SLUG=cofee`).
 
 | Document | Owns |
 |----------|------|
-| **`AGENTS.md` (this file)** | Always-on **repo contract** — architecture, layers, locators, waits, assertions, stability, markers |
-| **`.cursor/skills/*/SKILL.md`** | **Task workflows only** — how to perform one action (intake, dump, automate, review) |
-| **`.cursor/rules/mobile-appium-python.mdc`** | Short always-apply pointer to this contract |
+| **`AGENTS.md` (this file)** | Always-on **repo contract** — architecture, layers, waits, assertions, stability, markers; locator *policy* (never invent; confirm live) |
+| **`discover-mobile-locators`** | Locator **priority, naming, dumps** + dump/MCP workflow |
+| **Other `.cursor/skills/*/SKILL.md`** | Task workflows only — do not restate repo contract |
+| **`.cursor/rules/testscript-generator.mdc`** | Short always-apply pointer to this contract |
 
-Skills must **not** restate layer rules, locator priority, wait policy, or markers.
-They should say: *follow `AGENTS.md` Repo contract*, then describe their own steps.
+Skills must **not** restate layer rules, wait policy, or markers. For locator
+priority/naming, follow **`discover-mobile-locators`** (referenced under Locator
+strategy below).
 
 ---
 
@@ -48,7 +50,7 @@ invoke report
 | `invoke emulator:start` | Start Android emulator + wait for device |
 | `invoke app:analyze` | Extract package/activity/type from APK |
 | `invoke app:install` | Install APK on connected device |
-| `invoke ui:dump --screen=<name>` | Save UI tree to `docs/locators/<name>.xml` |
+| `invoke ui:dump --screen=<name>` | Save UI tree to `target/ui-dumps/<name>.xml` |
 | `invoke appium:start` | Start Appium 2.x server |
 | `invoke appium:doctor` | Environment health check |
 | `invoke appium:install-drivers` | Install UiAutomator2 + XCUITest drivers |
@@ -75,10 +77,10 @@ tests/
   test/cofee/              # Layer 4: test_*.py
 data/cofee/                # Structured fixtures
 docs/cofee-flow.md         # Product flows — read before authoring tests
-docs/locators/             # UI dumps per screen (local; gitignored *.xml)
 docs/context/              # Feature context + approved testcases
+target/ui-dumps/           # UI dumps from invoke ui:dump (local; under target/)
 environment/               # Per-env .properties overrides
-scripts/                   # Emulator / Appium / install / dump helpers
+tasks.py                   # invoke tasks (emulator, install, dump, test, report)
 ```
 
 ---
@@ -107,38 +109,11 @@ Import direction: **tests → steps → page_actions → page_objects → core**
 
 ### Locator strategy
 
-**Priority (highest first):**
+**Never invent locators.** Screenshots, Figma, and product source are flow/spec
+only — confirm every selector on a running app before treating a PO as final.
 
-1. `AppiumBy.ACCESSIBILITY_ID` / content-desc
-2. Android `ANDROID_UIAUTOMATOR` / resource-id
-3. iOS `IOS_PREDICATE` / `IOS_CLASS_CHAIN`
-4. Text / label
-5. XPath — last resort; justify in a comment
-
-**Never invent locators.** Screenshots, Figma, and product/source code are
-**flow/spec** only. Confirm every selector on a running app (`invoke ui:dump`
-and/or Appium MCP) before treating a PO as final.
-
-**Naming (PO fields):**
-
-| Prefix | Kind | Example |
-|--------|------|---------|
-| `btn_` | Button / CTA | `btn_continue` |
-| `input_` | Text field | `input_mobile` |
-| `txt_` | Static label | `txt_title` |
-| `msg_` | Error / toast | `msg_whitelist_error` |
-| `chk_` | Checkbox / switch | `chk_terms` |
-| `ddl_` | Dropdown | `ddl_org` |
-| `lnk_` | Link | `lnk_view_payments` |
-| `icn_` | Icon-only | `icn_kebab_menu` |
-| `tab_` | Tab | `tab_groups` |
-| `card_` | Card / list row | `card_member` |
-
-Private attrs: `self._<prefix><name>_<strategy>` (`_acc`, `_uia`, `_ios`, `_text`, `_xpath`).  
-Public API: `find_<prefix><name>()` → element; `loc_<prefix><name>()` → `(by, value)` for waits.  
-Do **not** put strategy suffixes on `find_*` / `loc_*`.
-
-UI dumps: `docs/locators/<screen>.xml` — **local only** (gitignored); do not commit.
+**Full priority order, PO naming (`btn_` / `find_*` / `loc_*`), and dump paths:**
+see skill **`discover-mobile-locators`**.
 
 ### Wait & stability
 
@@ -178,6 +153,22 @@ Every UI test:
 - No hardcoded credentials or product names — `.env` / `get_settings()` / `APP_NAME`
 - Lint: `invoke lint` / `invoke test` auto-fix (ruff + black); do not leave formatting for humans
 
+### Test data & credentials
+
+**OTP strategy** — pick one per app, document the choice in
+`docs/<app_slug>-flow.md` → Known blockers / Test data:
+
+| Strategy | Implementation |
+|----------|----------------|
+| Fixed OTP in dev | Set `TEST_OTP` in `.env` / `.env.dev` (never commit) |
+| Manual | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
+| Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
+
+- Credentials live in `.env`/`.env.<env>` only — never in a committed context/flow doc, dataprovider, PO, or step
+- No production credentials — dev/stg/uat only
+- Fail fast if `TEST_MOBILE` is missing when login tests are collected
+- Backend/SQL assertions: keep queries in `data/<app_slug>/` scripts — never in page layers
+
 ### Feature context vs automation
 
 | Input | Role |
@@ -194,8 +185,9 @@ Do not invent flows or selectors not documented **or** inspected on device.
 
 `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_ENV`, `PLATFORM`, `APPIUM_HOST`,
 `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
-`API_BASE_URL`, `TEST_MOBILE`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`,
-`NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
+`API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`, `DEFAULT_USERNAME`,
+`DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`,
+`EXPLICIT_WAIT_TIMEOUT`
 
 ---
 
@@ -211,43 +203,34 @@ above.
 
 | Skill | Role | Output / handoff |
 |-------|------|------------------|
-| `onboard-mobile-app` | New APK/IPA → registry, `.env`, folder rename | Ready for discovery |
-| `get-context` | Preferred feature intake (PRD/Figma/Jira/app source) | `docs/context/<app_slug>-<feature>-context.md` |
-| `author-mobile-flow-docs` | Fallback intake → flow doc | `docs/<app_slug>-flow.md` |
-| `extract-p0-test-cases` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
-| `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
-| `setup-mobile-test-data` | OTP, API seeding, credentials via `.env` | Test data ready |
-| `automate-a-flow` | Orchestrate one approved scenario | Working E2E for one flow |
-| `mobile-appium-python` | Write/edit layer files; flaky fixes | Layered automation files |
+| `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
+| `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
+| `discover-mobile-locators` | Live UI dump / Appium MCP | `target/ui-dumps/<screen>.xml` + confirmed PO locators |
+| `testscript-generator` | Orchestrate **and** implement one approved scenario end-to-end (test data source decided in its Step 1); also the skill for writing/editing layer files or fixing flaky tests on their own | Working E2E for one flow / layered automation files |
 
-`automate-a-flow` = orchestration. `mobile-appium-python` = layer authoring.
-Prefer `automate-a-flow` for “automate this”; use `mobile-appium-python` when
-editing an existing layer or debugging locators/markers.
+Use `testscript-generator` for anything from "automate this feature" to
+editing a single existing layer file or debugging a locator/marker — it's
+one skill covering the full path from prerequisites through implementation.
 
 ### Supporting (any time)
 
 | Skill | When to use |
 |-------|-------------|
 | `read-test-reports` | Generate Allure HTML and triage failures |
-| `review-changes` | Review against this **Repo contract** before merge |
-| `author-pr-description` | Draft PR body from real branch diff |
+| `pr-review-changes` | Review against this **Repo contract** before merge |
+| `add-pr-description` | Draft PR body from real branch diff |
 
 ### Pipeline
 
 ```text
-# Preferred
+# Preferred (app already configured, e.g. CoFee)
 get-context
-  → extract-p0-test-cases
+  → testcase-generator
   → discover-mobile-locators
-  → setup-mobile-test-data
-  → automate-a-flow
-  → mobile-appium-python
+  → testscript-generator
 
-# Fallback (no get-context this session)
-author-mobile-flow-docs → extract-p0-test-cases → (same from discover onward)
-
-# New app binary only
-onboard-mobile-app → get-context | author-mobile-flow-docs → …
+# New product (not in APP_REGISTRY / slug folders)
+get-context Phase 0 asks for APK/IPA → wires repo → then same preferred pipeline
 ```
 
 ---
@@ -264,7 +247,7 @@ onboard-mobile-app → get-context | author-mobile-flow-docs → …
 **Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.  
 **Enable:** Restart Cursor / reload MCP → toggle **appium-mcp**.
 
-Walkthrough steps: **`automate-a-flow`** and **`discover-mobile-locators`**.
+Walkthrough steps: **`testscript-generator`** and **`discover-mobile-locators`**.
 Screenshots → `target/mcp-screenshots/` when `NO_UI=true`.
 
 ### Figma MCP
@@ -275,8 +258,7 @@ Design copy only — confirm locators via live dump. See **`get-context`**.
 
 ## Adding a feature (code order)
 
-Use **`automate-a-flow`** for the full workflow. File order (patterns in
-`mobile-appium-python`):
+Use **`testscript-generator`** for the full workflow, including file order:
 
 1. `src/page_objects/cofee/<screen>_po.py`
 2. `src/page_actions/cofee/<screen>_actions.py`

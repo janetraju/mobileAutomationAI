@@ -1,7 +1,7 @@
 # Test Cases: Enable Partial Payment (`cofee-enable-partial-payment`)
 
 Source: [docs/context/cofee-enable-partial-payment-context.md](cofee-enable-partial-payment-context.md)
-(live-validated) + [docs/locators/enable_partial_payment.md](../locators/enable_partial_payment.md)
+(live-validated). Locators live in `src/page_objects/cofee/`.
 Approved: 2026-07-16 session
 
 ## Preconditions (shared, reference by id)
@@ -220,7 +220,8 @@ hardware-accelerated rendering.
 | Global screen title | accessibility id `All payments` | yes |
 | "View payments" button | accessibility id `View payments` | yes |
 
-Full table: [docs/locators/enable_partial_payment.md](../locators/enable_partial_payment.md).
+Confirmed selectors are implemented in `src/page_objects/cofee/`
+(`payment_card_po`, `group_detail_po`, `home_po`, etc.).
 
 ## Open questions
 
@@ -248,5 +249,5 @@ Full table: [docs/locators/enable_partial_payment.md](../locators/enable_partial
 
 ## Handoff
 
-Next: **`mobile-appium-python`** to implement page objects, actions,
-steps, and tests using this context file + locator sheet + dataprovider.
+Next: **`testscript-generator`** to implement page objects, actions,
+steps, and tests using this context file + dataprovider.

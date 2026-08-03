@@ -44,6 +44,4 @@ def get_create_group_test_data() -> list:
 
 def get_create_group_weekly_test_data() -> list:
     """Return create-group data with weekly Monday fee schedule — P0-04 (from product repo)."""
-    return [
-        _base_create_group_params("weekly_monday", "manual_member_weekly_monday")
-    ]
+    return [_base_create_group_params("weekly_monday", "manual_member_weekly_monday")]

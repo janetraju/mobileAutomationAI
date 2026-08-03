@@ -12,7 +12,6 @@ dependencies = [
     "Appium-Python-Client==4.5.1",
     "allure-pytest==2.13.5",
     "black==24.10.0",
-    "httpx==0.28.1",
     "invoke==2.2.0",
     "pre-commit==4.0.1",
     "psycopg[binary]==3.2.3",

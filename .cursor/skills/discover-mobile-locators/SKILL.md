@@ -1,106 +1,149 @@
 ---
 name: discover-mobile-locators
 description: >-
-  Discover real mobile UI locators by installing the app on a device or emulator
-  and capturing accessibility trees. Use before writing page objects, when
-  onboarding a new app, after UI changes, or when APK/source analysis is
-  insufficient. Locator priority and naming live in AGENTS.md — this skill is
-  the dump/MCP workflow only.
-disable-model-invocation: true
+  Captures and verifies UI locators from a running app via ui:dump and Appium
+  MCP; defines locator priority, PO naming, and dump paths. Use when creating
+  page objects, adding test scenarios, fixing stale locators, refreshing UI
+  dumps, or when the user mentions locators, selectors, or UI inspection.
+---
+# Capture UI Locators
+
+Capture and verify UI locators from a **running application** using `ui:dump`
+and Appium MCP.
+
+**Owns:** locator priority, PO naming, dump paths, and the dump/MCP workflow.  
+**Repo contract (layers, waits, markers):** [AGENTS.md](../../../AGENTS.md).
+
+## When to Use
+
+Use this skill when:
+
+- Creating a new `*_po.py` file
+- Adding a new test scenario (MCP walkthrough required)
+- UI changes have invalidated existing locators
+- Refreshing stale UI dumps
+- Working with Flutter, React Native, or hybrid applications
+
+> Product source, APK analysis, and Figma can provide candidate locators, but
+> **every locator must be verified on a live application**.
+
 ---
 
-# Discover Mobile Locators
+## Locator strategy (source of truth)
 
-**Task:** capture and confirm locators on a running app.  
-**Repo contract:** [AGENTS.md](../../../AGENTS.md) — locator priority, naming
-prefixes/suffixes, `find_*` / `loc_*`, no invented selectors.
+### Priority (highest first)
 
-## When to use
+1. `AppiumBy.ACCESSIBILITY_ID` / content-desc  
+2. Android `ANDROID_UIAUTOMATOR` / resource-id  
+3. iOS `IOS_PREDICATE` / `IOS_CLASS_CHAIN`  
+4. Text / label  
+5. XPath — last resort; justify in a comment  
 
-- Before creating any `*_po.py` file
-- After `onboard-mobile-app`, `get-context`, or `author-mobile-flow-docs`
-- After analyzing a product/source repo (code labels/keys are **hypotheses only**)
-- User asks for selectors, Inspector output, or uiautomator dump
+### Naming (PO fields)
 
-## Prerequisites
+| Prefix | Kind | Example |
+|--------|------|---------|
+| `btn_` | Button / CTA | `btn_continue` |
+| `input_` | Text field | `input_mobile` |
+| `txt_` | Static label | `txt_title` |
+| `msg_` | Error / toast | `msg_whitelist_error` |
+| `chk_` | Checkbox / switch | `chk_terms` |
+| `ddl_` | Dropdown | `ddl_org` |
+| `lnk_` | Link | `lnk_view_payments` |
+| `icn_` | Icon-only | `icn_kebab_menu` |
+| `tab_` | Tab | `tab_groups` |
+| `card_` | Card / list row | `card_member` |
 
-```bash
-invoke appium:doctor
-invoke emulator:start          # Android; or connect physical device
-invoke app:install             # uses APP_PATH from .env
-```
+Private attrs: `self._<prefix><name>_<strategy>` (`_acc`, `_uia`, `_ios`, `_text`, `_xpath`).  
+Public API: `find_<prefix><name>()` → element; `loc_<prefix><name>()` → `(by, value)` for waits.  
+Do **not** put strategy suffixes on `find_*` / `loc_*`.
+
+### Dumps
+
+`target/ui-dumps/<screen>.xml` — **local only** (under `target/`); do not commit.  
+iOS: `target/ui-dumps/<screen>_ios.xml`.
+
+### Preference by app type
+
+| APP_TYPE | Preferred locator |
+|----------|-------------------|
+| `flutter` | `content-desc` / Semantics |
+| `rn` | `testID` / `accessibilityLabel` |
+| `hybrid` | Native hierarchy (WebView only when required) |
+| `native` | `resource-id` |
+
+---
 
 ## Workflow
 
-### 1. Confirm config
+### Step 1 — Prepare the Environment
 
-From `.env`: `APP_SLUG`, `APP_TYPE`, `PLATFORM`, `APP_PACKAGE`, `APP_ACTIVITY`.
+```bash
+invoke appium:doctor
+invoke emulator:start        # or connect a physical device
+invoke app:install           # uses APP_PATH from .env
+```
 
-### 2. Launch app to target screen
+Verify in `.env`: `APP_SLUG`, `APP_TYPE`, `PLATFORM`, `APP_PACKAGE`, `APP_ACTIVITY`.  
+Keep `environment/appium-mcp.capabilities.json` aligned with `.env`.
+
+### Step 2 — Capture Static UI Dumps
 
 ```bash
 adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
-# Navigate manually or via deep link to the screen under test
+invoke ui:dump --screen=<screen_name>   # → target/ui-dumps/<screen_name>.xml
 ```
 
-### 3. Dump UI tree
+Repeat per screen. Do **not** commit the XML files.
 
-```bash
-invoke ui:dump --screen=<screen_name>
-# writes docs/locators/<screen_name>.xml locally (gitignored)
-```
+### Step 3 — Walk the Flow with Appium MCP
 
-Repeat per screen (e.g. `splash`, `login_phone`, `login_otp`, `home`).
+**Mandatory** for every new test scenario.
 
-### 3b. Appium MCP (live tree — mandatory for new TCs)
+1. `select_device` → `appium_session_management` (`action=create`)  
+2. Navigate with `appium_gesture` / `appium_set_value` / `appium_find_element`  
+3. Per screen: screenshot → page source → save XML → `generate_locators`  
+4. Confirm every generated locator against page source and visible UI  
 
-**Required before any new test scenario** — see **`automate-a-flow`**.
+| Scenario | Action |
+|----------|--------|
+| Fresh login | Clear app data and relaunch |
+| Logged-in session | Reuse the existing session |
+| Downstream flow | Complete login before continuing |
 
-1. Emulator/device up; `.env` matches `environment/appium-mcp.capabilities.json`
-2. `select_device` → `appium_session_management` (`action=create`)
-3. Walk the scenario — `appium_gesture` / `appium_set_value`
-4. Per screen: `appium_get_page_source` → `docs/locators/<screen>.xml`
-5. `generate_locators` — **confirm every selector** against page source before `*_po.py`
+Screenshots when `NO_UI=true`: `target/mcp-screenshots/`.
 
-Screenshots → `target/mcp-screenshots/` when `NO_UI=true`.
+Re-dump after animations, keyboard, or navigation.
 
-### 4. Parse dump
+### Step 4 — Confirm Locators for Handoff
 
-Apply **AGENTS.md Locator strategy** (priority + naming) to each interactive
-element. Re-dump after animations, keyboard, or navigation.
+Apply **Locator strategy** above. Summarize confirmed selectors in chat (or
+directly into the PO during `testscript-generator`) — do **not** commit
+locator sheets under `docs/`.
 
-### 5. App-type notes (while parsing)
-
-| `APP_TYPE` | Guidance |
-|------------|----------|
-| `flutter` | Prefer `content-desc` / semantic labels; avoid brittle XPath into `android.view.View` |
-| `rn` | Prefer `content-desc` matching `testID` / `accessibilityLabel` |
-| `hybrid` | Dump native; switch WebView in actions for H5 |
-| `native` | `resource-id` usually stable |
-
-### 6. Produce locator sheet
-
-Document in `docs/<app_slug>-flow.md` or `docs/locators/<screen>.md`:
-
-| PO name | Element | Strategy | Locator value | Confirmed |
-|---------|---------|----------|---------------|-----------|
-| `input_mobile` | Phone field | accessibility id | `...` | yes |
+| Page Object | Element | Strategy | Locator | Confirmed |
+|-------------|---------|----------|---------|-----------|
 
 PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobile`).
 
-Dump file names: `docs/locators/<screen>.xml` (snake_case screen names).  
-iOS: `docs/locators/<screen>_ios.xml`.
+### Step 5 — Summarize Findings
 
-### 7. Hand off
+- Screens visited (order)  
+- Confirmed UI text  
+- Verified strategy per screen  
+- Quirks / overlays  
+- Gaps vs expected flow  
 
-Only after the locator sheet exists → **`mobile-appium-python`** / **`automate-a-flow`**.
+### Step 6 — Hand Off
 
-## Skill-specific rules
+→ `testscript-generator` (do **not** author `*_po.py` in this skill).
 
-- Never guess from APK or product source alone — confirm live
-- Product repo / widget keys are candidates only
-- Do not commit `docs/locators/*.xml` (see `.gitignore`)
+## Rules
 
-## Related skills
+- Never invent locators from APK / product source / Figma alone  
+- Never write Page Object files here  
+- Never commit generated XML dumps  
 
-`automate-a-flow` · `mobile-appium-python` · [AGENTS.md](../../../AGENTS.md)
+## Related Skills
+
+`testscript-generator` · `get-context` · [AGENTS.md](../../../AGENTS.md)

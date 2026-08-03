@@ -5,8 +5,8 @@ Sources: CoFee Flutter app source (`reference/cofee-app-source/cofee-app-develop
 + Figma (MCP) + live device session (`Pixel_7` emulator, `cofee-dev.apk`
 versionCode 109). No PRD/Jira.
 
-**Locator sheet:** [docs/locators/enable_partial_payment.md](../locators/enable_partial_payment.md)
-— full live-confirmed locator table + raw UI dumps.
+**Locators:** live-confirmed during discovery; implemented in
+`src/page_objects/cofee/` (`payment_card_po`, `group_detail_po`, etc.).
 
 ## Artifacts received
 
@@ -72,12 +72,11 @@ Code: `lib/app/modules/payments/widgets/payment_card_bottom_actions.dart`.
 
 ## Elements per screen
 
-See the [locator sheet](../locators/enable_partial_payment.md) for the
-full table with strategies/values. Summary status: every element in this
-feature is now 🟢 **live-confirmed** via `content-desc`
-(`AppiumBy.ACCESSIBILITY_ID`), except the raw amount `EditText` on Mark As
-Paid, which has no accessible id and needs a class/XPath fallback (lowest
-locator priority per `AGENTS.md`).
+Summary status: every element in this feature is 🟢 **live-confirmed** via
+`content-desc` (`AppiumBy.ACCESSIBILITY_ID`), except the raw amount
+`EditText` on Mark As Paid, which has no accessible id and needs a
+class/XPath fallback (lowest locator priority per `AGENTS.md`). See
+page objects under `src/page_objects/cofee/` for the committed selectors.
 
 **Merged semantics confirmed live:** payment cards expose one merged
 `content-desc` block (name + group/note + amount + date) rather than
@@ -172,9 +171,5 @@ data per test run) rather than assuming a clean slate.
 
 ## Handoff
 
-Locators are live-confirmed — next: `extract-p0-test-cases` (this context
-file + [the locator sheet](../locators/enable_partial_payment.md) are
-ready inputs) → `setup-mobile-test-data` (account for the pre-existing
-partial-enabled test payment noted above) → `mobile-appium-python`.
-`author-mobile-flow-docs` can also be run to add this flow to
-`docs/cofee-flow.md`'s screen map.
+Locators are live-confirmed in page objects — next was testcase generation
+and `testscript-generator` for implementation.

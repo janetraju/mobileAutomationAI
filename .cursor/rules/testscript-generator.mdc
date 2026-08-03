@@ -3,15 +3,15 @@ description: Enforce four-layer Appium Python architecture for any app in this r
 alwaysApply: true
 ---
 
-# Mobile Appium Python Rules
+# Testscript Generator Rules
 
 **Source of truth:** **`AGENTS.md` → Repo contract** (architecture, layers,
 locators, waits, assertions, markers, stability).
 
 Skills under `.cursor/skills/` are **task workflows only** — they must not
 redefine those rules. Before authoring or reviewing tests, read `AGENTS.md`;
-then open the skill for the specific action (`automate-a-flow`,
-`mobile-appium-python`, `discover-mobile-locators`, etc.).
+then open the skill for the specific action (`testscript-generator`,
+`discover-mobile-locators`, etc.).
 
 ## Always enforce (summary — details in AGENTS.md)
 

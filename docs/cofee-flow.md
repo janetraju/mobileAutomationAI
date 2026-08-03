@@ -1,100 +1,49 @@
-# CoFee — Flow Documentation
+# CoFee — Flow doc
 
-**App:** CoFee dev (`cofee.life.app.dev`) · **Type:** Flutter · **Platform:** Android  
-**API:** `https://api.dev.cofee.life`
+Flutter Android · `cofee.life.app.dev` · API `https://api.dev.cofee.life`  
+Detail TCs: `docs/context/` when present.
 
-## Login happy path (automated)
+## Status
 
-1. Fresh install → notification Allow (if shown)
-2. Onboarding carousel → phone entry
-3. Enter mobile → OTP → account picker → Continue → Home
+| ID | Flow | Status |
+|----|------|--------|
+| P0-01/02 | Login + home | **Done** — `tests/test/cofee/login/` |
+| P0-03 | Create group (monthly last day) | **Done** — `test_create_group_with_manual_member` |
+| P0-04 | Create group (weekly Mon) | **Done** — `test_create_group_with_weekly_fee_collection` |
+| P1-01…03 | Contacts / installments / 2 members | Not started |
+| P0-05 | Enable partial payment (HP-01, HP-04, NEG-01) | **Done** — `tests/test/cofee/payments/test_enable_partial_payment.py` |
+| P0-06 | Dues View All → Pending search (user1) | **Done** — `tests/test/cofee/payments/test_dues_search.py` |
+| P1-04 | Home Groups View All → My active groups | **Done** — `tests/test/cofee/home/test_home_explore.py` |
 
-| ID | Flow | Priority | Automation status | Notes |
-|----|------|----------|-------------------|-------|
-| P0-01 | Phone + OTP login | P0 | **Done** | `tests/test/cofee/login/test_login.py` |
-| P0-02 | Post-login home visible | P0 | **Done** | Covered in P0-01 |
+## Flows
 
-## Create group happy path (from screenshots — confirmed)
+**Login:** fresh install → phone → OTP → account picker → Home  
 
-**Precondition:** Logged in as **Individual** account (`test individual`).
+**Create group** (logged-in Individual): Add New → Manually → add member → name + amount → Fee Collection Day → schedule → Save (left tap) → I'll share later → assert group detail  
 
-| Step | Screen | Action |
-|------|--------|--------|
-| 1 | Home | Tap **Add New** (+) in Groups section |
-| 2 | Select members (bottom sheet) | Tap **Manually** |
-| 3 | Add member | Enter **Name**, **Mobile Number**, tap **Add** |
-| 4 | Create group | Form with 1 member pre-added |
-| 5 | Create group | Enter **Group name** and **Amount** (fee) |
-| 6 | Create group | Tap **Fee Collection Day** → opens schedule modal |
-| 7 | Schedule payment collection | Select **Last day of the month** → **Apply** |
-| 8 | Create group | Tap **Save** (green bar — avoid dev FAB on right) |
-| 9 | Promo modal | Tap **I'll share later** |
-| 10 | Group detail | Verify group name, member count, fee amount |
+| Variant | Schedule |
+|---------|----------|
+| P0-03 | Last day of the month |
+| P0-04 | Weekly → Mon (`Weekly: Monday`) |
 
-**Success criteria (step 10):**
+**Enable partial payment** (logged in; pending payment ≥ ₹2,000): open payment card (member history / Group payments / All payments) → ⋮ → **Enable Partial Payment** → **Confirm** → card shows `0%,` prefix; menu no longer offers Enable Partial Payment  
 
-- Header shows group name (e.g. `Test group1`)
-- Subtitle: `1 Active Member` (or member count badge)
-- Member row shows name and **Fee amount** matching entered amount
-- Overview cards visible (Amount Collected / Amount Due)
+| Case | What |
+|------|------|
+| HP-01 | Enable on eligible card |
+| HP-04 | Option available from all three entry points |
+| NEG-01 | Option hidden when amount &lt; ₹2,000 |
 
-## Create group — weekly fee collection (from product repo)
+**Dues search** (logged-in Individual; pending due for member exists): Home → Dues **View All** → All payments **Pending** with dues listed → search icon → type member → assert card listed  
 
-**Source:** `builds/cofee-app-develop` — `WeeklyFrequencySelector`, `group_settings.dart` frequencySelectors  
-**Precondition:** Same as above (logged-in Individual).
+| Case | What |
+|------|------|
+| P0-06 | Search `user1` → `User1` card visible |
 
-| Step | Screen | Action |
-|------|--------|--------|
-| 1–6 | Same as P0-03 | Through opening schedule modal |
-| 7 | Schedule payment | Open **Frequency** dropdown (default Monthly) → **Weekly** |
-| 8 | Schedule payment | Tap weekday chip **Mon** → **Apply** |
-| 9 | Create group | Field shows **`Weekly: Monday`** → **Save** |
-| 10–11 | Promo → Group detail | Same success criteria as P0-03 |
+**Home explore** (logged-in Individual): Home → Groups section **View All** → assert **My active groups** list  
 
-| ID | Flow | Priority | Automation status | Context | Notes |
-|----|------|----------|-------------------|---------|-------|
-| P0-03 | Create group with manual member (monthly last day) | P0 | **Done** | screenshots | `test_create_group_with_manual_member` |
-| P0-04 | Create group with weekly Monday fee | P0 | **Done** | product repo | `test_create_group_with_weekly_fee_collection` |
-| P1-01 | Create group from contacts | P1 | Not started | product repo | Requires contacts permission |
-| P1-02 | Create group with installments toggle | P1 | Not started | product repo | Amount ≥ org `splitRequiredAmountMin` |
-| P1-03 | Create group with two manual members | P1 | Not started | product repo | Members `+` on create form |
+| Case | What |
+|------|------|
+| P1-04 | Groups View All opens My active groups |
 
-## Screen map
-
-| Screen | Entry | Page object | Locator discovery |
-|--------|-------|-------------|-------------------|
-| Home | After login | `home_po.py` | `invoke ui:dump --screen=home_logged_in` |
-| Select members | Add New | `create_group_po.py` | `invoke ui:dump --screen=select_members` |
-| Add member | Manually | `create_group_po.py` | `invoke ui:dump --screen=add_member` |
-| Create group | After Add member | `create_group_po.py` | `invoke ui:dump --screen=create_group` |
-| Schedule payment | Fee Collection Day | `create_group_po.py` | `invoke ui:dump --screen=schedule_payment` |
-| Promo share | After Save | `create_group_po.py` | `invoke ui:dump --screen=share_promo` |
-| Group detail | After I'll share later | `group_detail_po.py` | `invoke ui:dump --screen=group_detail` |
-
-UI dump XMLs are local/temporary — do not commit them. Locators live in page objects.
-
-## Known blockers
-
-| Blocker | Mitigation |
-|---------|------------|
-| Dev debug FAB (purple cloud) overlaps Save/Next | Tap left-center of CTAs via gesture |
-| Promo modal after Save | Dismiss with **I'll share later** |
-| Duplicate group name | Use runtime-unique name in test data |
-| Login required | Reuse `user_ensures_logged_in_home` after P0-01 in same session |
-| `Fee Collection Start Date` pre-filled | Leave default unless test requires change |
-
-## Test data
-
-| Item | Source |
-|------|--------|
-| Login phone / OTP | `TEST_MOBILE`, `TEST_OTP` in `.env` |
-| Member name | Runtime unique, e.g. `AutoMember{timestamp}` |
-| Member phone | `TEST_MEMBER_MOBILE` or generated 10-digit |
-| Group name | Runtime unique, e.g. `AutoGroup{timestamp}` |
-| Group amount | Parametrize, default `5000` |
-
-## Locator notes (Flutter)
-
-- Prefer `content-desc` / visible text
-- Bottom sheet: **Select members**, **Manually**
-- Save is full-width green button — not the purple FAB
+Detail TCs: `docs/context/cofee-enable-partial-payment-testcases.md`

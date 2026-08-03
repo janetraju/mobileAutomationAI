@@ -94,3 +94,50 @@ class PaymentCardActions(PageActions):
             return True
         except TimeoutException:
             return False
+
+    def is_pending_tab_visible(self, timeout: float | None = None) -> bool:
+        """Return True when the Pending filter chip is on screen.
+
+        Live-confirmed: UiAutomator `selected` stays false even when Pending
+        is the active filter (Dues View All lands here by default), so callers
+        assert chip presence + listed dues rather than the selected flag.
+        """
+        try:
+            self.wait_for_element_visible(self._card_po.loc_tab_pending(), timeout=timeout)
+            return True
+        except TimeoutException:
+            return False
+
+    def are_pending_dues_listed(self, timeout: float | None = None) -> bool:
+        """Return True when at least one pending card exposes 'Send reminder'."""
+        try:
+            self.wait_for_element_visible(self._card_po.loc_btn_send_reminder(), timeout=timeout)
+            return True
+        except TimeoutException:
+            return False
+
+    def tap_search_icon(self) -> None:
+        """Open the All payments search field via the header magnifying glass."""
+        search = self.wait_for_element_visible(self._card_po.loc_icn_search(), timeout=10)
+        self.tap(search)
+        self.wait_for_element_visible(self._card_po.loc_input_search(), timeout=10)
+
+    def search_payments(self, query: str) -> None:
+        """Type into the All payments search field (field must already be open)."""
+        field = self.wait_for_element_visible(self._card_po.loc_input_search(), timeout=10)
+        self.tap(field)
+        # Flutter EditText often keeps prior text after clear(); backspace first.
+        current = field.text or ""
+        for _ in range(len(current) + 2):
+            self._driver.press_keycode(67)
+        self.type_text(field, query)
+
+    def is_payment_listed(self, identifier: str, timeout: float | None = None) -> bool:
+        """Return True when a payment card matching `identifier` is visible."""
+        try:
+            self.wait_for_element_visible(
+                self._card_po.loc_payment_card(identifier), timeout=timeout
+            )
+            return True
+        except TimeoutException:
+            return False
