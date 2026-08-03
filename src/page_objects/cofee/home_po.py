@@ -31,6 +31,7 @@ class HomePo(BasePage):
             AppiumBy.ANDROID_UIAUTOMATOR,
             'new UiSelector().descriptionContains("Dues").descriptionContains("View All")',
         )
+        self._btn_groups_view_all_acc = (AppiumBy.ACCESSIBILITY_ID, "View All")
 
     def find_tab_home(self):
         """Bottom navigation Home tab."""
@@ -63,3 +64,7 @@ class HomePo(BasePage):
     def loc_btn_dues_view_all(self) -> tuple[str, str]:
         """Dues section header / View All CTA on the home dashboard."""
         return self._btn_dues_view_all_uia
+
+    def loc_btn_groups_view_all(self) -> tuple[str, str]:
+        """Groups section View All CTA (exact desc; distinct from Dues merge)."""
+        return self._btn_groups_view_all_acc

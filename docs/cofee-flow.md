@@ -13,6 +13,7 @@ Detail TCs: `docs/context/` when present.
 | P1-01…03 | Contacts / installments / 2 members | Not started |
 | P0-05 | Enable partial payment (HP-01, HP-04, NEG-01) | **Done** — `tests/test/cofee/payments/test_enable_partial_payment.py` |
 | P0-06 | Dues View All → Pending search (user1) | **Done** — `tests/test/cofee/payments/test_dues_search.py` |
+| P1-04 | Home Groups View All → My active groups | **Done** — `tests/test/cofee/home/test_home_explore.py` |
 
 ## Flows
 
@@ -38,5 +39,11 @@ Detail TCs: `docs/context/` when present.
 | Case | What |
 |------|------|
 | P0-06 | Search `user1` → `User1` card visible |
+
+**Home explore** (logged-in Individual): Home → Groups section **View All** → assert **My active groups** list  
+
+| Case | What |
+|------|------|
+| P1-04 | Groups View All opens My active groups |
 
 Detail TCs: `docs/context/cofee-enable-partial-payment-testcases.md`

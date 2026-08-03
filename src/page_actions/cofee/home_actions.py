@@ -92,3 +92,22 @@ class HomeActions(PageActions):
         self.scroll_to_dues_section()
         view_all = self.wait_for_element_visible(self._home_po.loc_btn_dues_view_all(), timeout=10)
         self.tap(view_all)
+
+    def scroll_to_groups_view_all(self) -> None:
+        """Scroll home until the Groups section View All CTA is visible."""
+        if self._page.is_displayed(self._home_po.loc_btn_groups_view_all()):
+            return
+        for _ in range(3):
+            self.swipe_up(percent=0.55)
+            if self._page.is_displayed(self._home_po.loc_btn_groups_view_all()):
+                return
+        self.wait_for_element_visible(self._home_po.loc_btn_groups_view_all(), timeout=5)
+
+    def tap_groups_view_all(self) -> None:
+        """Open My active groups from the home Groups section View All CTA."""
+        self.ensure_home_tab_selected()
+        self.scroll_to_groups_view_all()
+        view_all = self.wait_for_element_visible(
+            self._home_po.loc_btn_groups_view_all(), timeout=10
+        )
+        self.tap(view_all)
