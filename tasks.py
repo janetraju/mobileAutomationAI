@@ -234,9 +234,9 @@ def app_install(c, apk=""):
 
 @task(name="ui:dump")
 def ui_dump(c, screen="screen"):
-    """Dump Android UI hierarchy to docs/locators/<screen>.xml."""
+    """Dump Android UI hierarchy to target/ui-dumps/<screen>.xml."""
     adb = _adb()
-    out_dir = ROOT / "docs" / "locators"
+    out_dir = TARGET / "ui-dumps"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / f"{screen}.xml"
     remote = "/sdcard/window_dump.xml"

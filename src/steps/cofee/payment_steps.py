@@ -112,3 +112,42 @@ def user_enables_partial_payment_and_verifies(driver: WebDriver, card_identifier
         "Enable Partial Payment option should disappear immediately after enabling",
     )
     card_actions.dismiss_kebab_menu()
+
+
+@allure.step("User opens All payments Pending from home Dues View All")
+def user_opens_pending_dues_via_view_all(driver: WebDriver) -> None:
+    """Home → Dues 'View All' → All payments with Pending dues listed."""
+    HomeActions(driver).tap_dues_view_all()
+    card_actions = PaymentCardActions(driver)
+    assert_element_visible(
+        card_actions.is_all_payments_screen_visible(timeout=10),
+        "'All payments' screen title",
+    )
+    assert_element_visible(
+        card_actions.is_pending_tab_visible(timeout=10),
+        "Pending filter on payments tab",
+    )
+    assert_element_visible(
+        card_actions.are_pending_dues_listed(timeout=10),
+        "pending dues list (Send reminder)",
+    )
+
+
+@allure.step("User searches All payments for '{query}' and verifies '{expected_name}'")
+def user_searches_all_payments_and_verifies(
+    driver: WebDriver, query: str, expected_name: str | None = None
+) -> None:
+    """Tap search, type `query`, assert a card matching `expected_name` is listed.
+
+    `expected_name` defaults to `query`. Pass a distinct value when the UI
+    search is case-insensitive but content-desc casing differs (e.g. user1 →
+    User1).
+    """
+    card_actions = PaymentCardActions(driver)
+    card_actions.tap_search_icon()
+    card_actions.search_payments(query)
+    match = expected_name if expected_name is not None else query
+    assert_element_visible(
+        card_actions.is_payment_listed(match, timeout=10),
+        f"payment card matching {match!r}",
+    )

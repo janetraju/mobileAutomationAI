@@ -12,6 +12,7 @@ Detail TCs: `docs/context/` when present.
 | P0-04 | Create group (weekly Mon) | **Done** — `test_create_group_with_weekly_fee_collection` |
 | P1-01…03 | Contacts / installments / 2 members | Not started |
 | P0-05 | Enable partial payment (HP-01, HP-04, NEG-01) | **Done** — `tests/test/cofee/payments/test_enable_partial_payment.py` |
+| P0-06 | Dues View All → Pending search (user1) | **Done** — `tests/test/cofee/payments/test_dues_search.py` |
 
 ## Flows
 
@@ -31,5 +32,11 @@ Detail TCs: `docs/context/` when present.
 | HP-01 | Enable on eligible card |
 | HP-04 | Option available from all three entry points |
 | NEG-01 | Option hidden when amount &lt; ₹2,000 |
+
+**Dues search** (logged-in Individual; pending due for member exists): Home → Dues **View All** → All payments **Pending** with dues listed → search icon → type member → assert card listed  
+
+| Case | What |
+|------|------|
+| P0-06 | Search `user1` → `User1` card visible |
 
 Detail TCs: `docs/context/cofee-enable-partial-payment-testcases.md`

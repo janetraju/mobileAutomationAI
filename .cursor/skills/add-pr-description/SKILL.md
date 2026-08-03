@@ -33,7 +33,6 @@ Review:
 
 - `docs/cofee-flow.md`
 - `docs/context/*.md`
-- `docs/locators/*.md`
 
 Determine:
 

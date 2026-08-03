@@ -36,6 +36,15 @@ class PaymentCardPo(BasePage):
         )
         self._btn_confirm_acc = (AppiumBy.ACCESSIBILITY_ID, "Confirm")
         self._btn_cancel_acc = (AppiumBy.ACCESSIBILITY_ID, "Cancel")
+        self._tab_pending_acc = (AppiumBy.ACCESSIBILITY_ID, "Pending")
+        self._btn_send_reminder_acc = (AppiumBy.ACCESSIBILITY_ID, "Send reminder")
+        # Search icon has empty content-desc (live dump); sibling of title is stable.
+        self._icn_search_xpath = (
+            AppiumBy.XPATH,
+            '//android.widget.ImageView[@content-desc="All payments"]'
+            "/following-sibling::android.widget.ImageView[1]",
+        )
+        self._input_search_class = (AppiumBy.CLASS_NAME, "android.widget.EditText")
 
     def loc_payment_card(self, identifier: str) -> tuple[str, str]:
         """Payment card whose merged content-desc contains `identifier`
@@ -92,3 +101,19 @@ class PaymentCardPo(BasePage):
 
     def loc_btn_cancel(self) -> tuple[str, str]:
         return self._btn_cancel_acc
+
+    def loc_tab_pending(self) -> tuple[str, str]:
+        """Pending filter chip on All payments."""
+        return self._tab_pending_acc
+
+    def loc_btn_send_reminder(self) -> tuple[str, str]:
+        """Action on a pending payment card — used to assert dues are listed."""
+        return self._btn_send_reminder_acc
+
+    def loc_icn_search(self) -> tuple[str, str]:
+        """Magnifying-glass icon in the All payments header."""
+        return self._icn_search_xpath
+
+    def loc_input_search(self) -> tuple[str, str]:
+        """Search field revealed after tapping the search icon."""
+        return self._input_search_class

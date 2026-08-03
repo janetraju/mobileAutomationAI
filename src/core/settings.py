@@ -121,9 +121,6 @@ class Settings(BaseSettings):
     default_password: str | None = Field(alias="DEFAULT_PASSWORD", default=None)
 
     api_base_url: str | None = Field(alias="API_BASE_URL", default=None)
-    api_auth_token: str | None = Field(alias="API_AUTH_TOKEN", default=None)
-    otp_generate_path: str | None = Field(alias="OTP_GENERATE_PATH", default=None)
-    otp_validate_path: str | None = Field(alias="OTP_VALIDATE_PATH", default=None)
     test_mobile: str | None = Field(alias="TEST_MOBILE", default=None)
     test_otp: str | None = Field(alias="TEST_OTP", default=None)
     app_package: str | None = Field(alias="APP_PACKAGE", default=None)

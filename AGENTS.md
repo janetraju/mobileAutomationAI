@@ -50,7 +50,7 @@ invoke report
 | `invoke emulator:start` | Start Android emulator + wait for device |
 | `invoke app:analyze` | Extract package/activity/type from APK |
 | `invoke app:install` | Install APK on connected device |
-| `invoke ui:dump --screen=<name>` | Save UI tree to `docs/locators/<name>.xml` |
+| `invoke ui:dump --screen=<name>` | Save UI tree to `target/ui-dumps/<name>.xml` |
 | `invoke appium:start` | Start Appium 2.x server |
 | `invoke appium:doctor` | Environment health check |
 | `invoke appium:install-drivers` | Install UiAutomator2 + XCUITest drivers |
@@ -77,8 +77,8 @@ tests/
   test/cofee/              # Layer 4: test_*.py
 data/cofee/                # Structured fixtures
 docs/cofee-flow.md         # Product flows — read before authoring tests
-docs/locators/             # UI dumps per screen (local; gitignored *.xml)
 docs/context/              # Feature context + approved testcases
+target/ui-dumps/           # UI dumps from invoke ui:dump (local; under target/)
 environment/               # Per-env .properties overrides
 tasks.py                   # invoke tasks (emulator, install, dump, test, report)
 ```
@@ -160,8 +160,7 @@ Every UI test:
 
 | Strategy | Implementation |
 |----------|----------------|
-| Fixed OTP in dev | Set `TEST_OTP` in `.env.dev` (never commit) |
-| API inject | `generate_otp()` (`src/core/api_client.py`), then read from a test mail/SMS hook or debug endpoint |
+| Fixed OTP in dev | Set `TEST_OTP` in `.env` / `.env.dev` (never commit) |
 | Manual | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
 | Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
 
@@ -186,9 +185,9 @@ Do not invent flows or selectors not documented **or** inspected on device.
 
 `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_ENV`, `PLATFORM`, `APPIUM_HOST`,
 `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
-`API_BASE_URL`, `API_AUTH_TOKEN`, `TEST_MOBILE`, `DEFAULT_USERNAME`,
-`DEFAULT_PASSWORD`, `OTP_GENERATE_PATH`, `OTP_VALIDATE_PATH`,
-`FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
+`API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`, `DEFAULT_USERNAME`,
+`DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`,
+`EXPLICIT_WAIT_TIMEOUT`
 
 ---
 
@@ -206,7 +205,7 @@ above.
 |-------|------|------------------|
 | `get-context` | Feature intake; **also** bootstraps a new app if not configured (asks for APK/IPA) | `docs/context/<app_slug>-<feature>-context.md` (+ registry/`.env` if new app) |
 | `testcase-generator` | Generate P0/P1/P2 cases (approval gated) | `docs/context/<app_slug>-<feature>-testcases.md` |
-| `discover-mobile-locators` | Live UI dump / Appium MCP | `docs/locators/<screen>.xml` + locator sheet |
+| `discover-mobile-locators` | Live UI dump / Appium MCP | `target/ui-dumps/<screen>.xml` + confirmed PO locators |
 | `testscript-generator` | Orchestrate **and** implement one approved scenario end-to-end (test data source decided in its Step 1); also the skill for writing/editing layer files or fixing flaky tests on their own | Working E2E for one flow / layered automation files |
 
 Use `testscript-generator` for anything from "automate this feature" to

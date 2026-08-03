@@ -25,6 +25,12 @@ class HomePo(BasePage):
         )
         self._tab_payments_acc = (AppiumBy.ACCESSIBILITY_ID, "Payments")
         self._tab_groups_acc = (AppiumBy.ACCESSIBILITY_ID, "Groups")
+        # Live-confirmed: Dues section header merges title + CTA into one Semantics
+        # node ("Dues\nView All"); Groups keeps a separate "View All" sibling.
+        self._btn_dues_view_all_uia = (
+            AppiumBy.ANDROID_UIAUTOMATOR,
+            'new UiSelector().descriptionContains("Dues").descriptionContains("View All")',
+        )
 
     def find_tab_home(self):
         """Bottom navigation Home tab."""
@@ -53,3 +59,7 @@ class HomePo(BasePage):
     def loc_tab_groups(self) -> tuple[str, str]:
         """Bottom navigation Groups tab."""
         return self._tab_groups_acc
+
+    def loc_btn_dues_view_all(self) -> tuple[str, str]:
+        """Dues section header / View All CTA on the home dashboard."""
+        return self._btn_dues_view_all_uia

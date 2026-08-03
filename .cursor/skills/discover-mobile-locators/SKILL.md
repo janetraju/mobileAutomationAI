@@ -60,8 +60,8 @@ Do **not** put strategy suffixes on `find_*` / `loc_*`.
 
 ### Dumps
 
-`docs/locators/<screen>.xml` — **local only** (gitignored); do not commit.  
-iOS: `docs/locators/<screen>_ios.xml`.
+`target/ui-dumps/<screen>.xml` — **local only** (under `target/`); do not commit.  
+iOS: `target/ui-dumps/<screen>_ios.xml`.
 
 ### Preference by app type
 
@@ -91,7 +91,7 @@ Keep `environment/appium-mcp.capabilities.json` aligned with `.env`.
 
 ```bash
 adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
-invoke ui:dump --screen=<screen_name>   # → docs/locators/<screen_name>.xml
+invoke ui:dump --screen=<screen_name>   # → target/ui-dumps/<screen_name>.xml
 ```
 
 Repeat per screen. Do **not** commit the XML files.
@@ -115,13 +115,11 @@ Screenshots when `NO_UI=true`: `target/mcp-screenshots/`.
 
 Re-dump after animations, keyboard, or navigation.
 
-### Step 4 — Build the Locator Sheet
+### Step 4 — Confirm Locators for Handoff
 
-Apply **Locator strategy** above. Optional sheet:
-
-```text
-docs/locators/<screen>.md
-```
+Apply **Locator strategy** above. Summarize confirmed selectors in chat (or
+directly into the PO during `testscript-generator`) — do **not** commit
+locator sheets under `docs/`.
 
 | Page Object | Element | Strategy | Locator | Confirmed |
 |-------------|---------|----------|---------|-----------|

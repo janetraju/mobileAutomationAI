@@ -51,7 +51,7 @@ src/steps/<app_slug>/
 tests/dataprovider/
 tests/test/<app_slug>/
 docs/context/
-docs/locators/
+target/ui-dumps/   # local dumps from invoke ui:dump
 ```
 
 Reuse existing implementation whenever possible.
@@ -145,25 +145,10 @@ framework components whenever possible.
 
 **Test data & OTP in dataproviders** — strategy table and security rules
 live in `AGENTS.md` → Test data & credentials; don't restate them here.
-Usage in a dataprovider/fixture:
+Pull credentials from `.env` / settings (e.g. `TEST_MOBILE`, `TEST_OTP`) —
+never hardcode a phone/OTP/token in the dataprovider.
 
-```python
-from src.core.api_client import generate_otp, validate_otp, ApiClient
-generate_otp("+919876543210")
-```
-
-Non-secret structured fixtures go under `data/<app_slug>/`:
-
-```
-data/<app_slug>/
-  users.example.json      # structure only, committed
-  users.json               # gitignored if it contains real data
-  org_setup.example.json
-```
-
-Encrypt at rest if secrets must live in the repo; decrypt via an env key
-(document in README). Never hardcode a phone/OTP/token in the dataprovider
-itself — pull from env or `data/<app_slug>/`.
+Non-secret structured fixtures go under `data/<app_slug>/` when needed.
 
 Framework fixtures (`driver`, `settings`, `mobile`, `otp`) are provided by `tests/conftest.py`.
 
