@@ -1,11 +1,12 @@
 ---
 name: create-mobile-framework-structure
 description: >-
-  Bootstraps a brand-new mobile app into the repo: analyzes the APK/IPA,
-  registers the app in APP_REGISTRY, wires .env, and scaffolds the
-  four-layer folder skeleton. Use when onboarding a new app, setting up
-  project structure for the first time, or before any feature context,
-  auth setup, or test design work can begin for that app.
+  Bootstraps a brand-new mobile app into an Appium-based, Page Object
+  Model (POM) automation repo: analyzes the APK/IPA, registers the app in
+  APP_REGISTRY, wires .env (including Appium capabilities), and scaffolds
+  the four-layer POM folder skeleton. Use when onboarding a new app,
+  setting up project structure for the first time, or before any feature
+  context, auth setup, or test design work can begin for that app.
 ---
 
 # Create Mobile Framework Structure
@@ -13,6 +14,11 @@ description: >-
 Bootstrap a new application into the **app-agnostic** framework so downstream
 skills (`get-mobile-context`, `get-mobile-auth`, `mobile-test-design`,
 `mobile-test-automation`) have a configured app to work against.
+
+This framework is **Appium 2.x** based and follows a **four-layer Page
+Object Model (POM)**: Page Objects (locators) → Page Actions (interactions)
+→ Steps (orchestration) → Tests. Every app this skill onboards gets the same
+Appium/POM skeleton — no other driver or architecture is supported.
 
 Repository conventions (Page Objects, locators, waits, coding standards, etc.)
 are defined in `AGENTS.md`. This skill only sets up the app registration and
@@ -34,15 +40,18 @@ If the app is already configured, skip this skill entirely and go straight to
 ## Output
 
 - App registered in `APP_REGISTRY`
-- `.env` populated with `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_PACKAGE`,
-  `APP_ACTIVITY`, `APP_PATH`
-- Empty four-layer folder skeleton created (no locators, no logic):
+- `.env` populated with:
+  - App identity: `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_PACKAGE`,
+    `APP_ACTIVITY`, `APP_PATH`
+  - Appium capabilities: `PLATFORM`, `APPIUM_HOST`, `APPIUM_PORT`,
+    `DEVICE_NAME`
+- Empty four-layer **POM** folder skeleton created (no locators, no logic):
   ```
-  src/page_objects/<app_slug>/
-  src/page_actions/<app_slug>/
-  src/steps/<app_slug>/
+  src/page_objects/<app_slug>/    # Page Object Model — Layer 1
+  src/page_actions/<app_slug>/    # Layer 2
+  src/steps/<app_slug>/           # Layer 3
   src/constants/<app_slug>/
-  tests/test/<app_slug>/
+  tests/test/<app_slug>/          # Layer 4
   data/<app_slug>/
   ```
 - `docs/<app_slug>-flow.md` stub, marked **Unconfirmed**
@@ -78,13 +87,15 @@ React Native / hybrid).
 Configure, in this order:
 
 1. `APP_REGISTRY` — add the new app entry
-2. `.env` — set `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_PACKAGE`,
-   `APP_ACTIVITY`, `APP_PATH`
-3. Project folders — create the empty four-layer skeleton listed in Output
+2. `.env` — set app identity (`APP_NAME`, `APP_SLUG`, `APP_TYPE`,
+   `APP_PACKAGE`, `APP_ACTIVITY`, `APP_PATH`) and Appium capabilities
+   (`PLATFORM`, `APPIUM_HOST`, `APPIUM_PORT`, `DEVICE_NAME`)
+3. Project folders — create the empty four-layer **POM** skeleton listed in
+   Output
 
 Do **not** derive Page Objects, locators, or any business logic from the APK
-analysis — that requires a live device dump (see `discover-mobile-locators`,
-used later by `mobile-test-automation`).
+analysis — that requires a live device dump via Appium, done later by
+`mobile-test-automation`.
 
 ## Step 5 — Create the Flow Doc Stub
 

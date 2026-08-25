@@ -247,18 +247,24 @@ Every UI test:
 
 ### Test data & credentials
 
-**OTP strategy** — pick one per app, set and documented by `get-mobile-auth`
-in `docs/<app_slug>-flow.md` → Known blockers / Test data:
+An app may support **more than one** login method — mobile number + OTP,
+email + password, Google/Gmail sign-in, or other SSO. `get-mobile-auth` sets
+and documents a strategy for **each** one the app actually has, in
+`docs/<app_slug>-flow.md` → Known blockers / Test data:
 
-| Strategy | Implementation |
-|----------|-----------------|
-| Fixed OTP in dev | Set `TEST_OTP` in `.env` / `.env.dev` (never commit) |
-| Manual | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
-| Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
+| Method | Strategy | Implementation |
+|--------|----------|-----------------|
+| Mobile + OTP | Fixed OTP in dev | Set `TEST_OTP` in `.env` / `.env.dev` (never commit) |
+| Mobile + OTP | Manual | Mark test `@pytest.mark.manual_otp` or pause — avoid in CI |
+| Mobile + OTP | Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
+| Email + password | Dedicated test account | `DEFAULT_USERNAME` / `DEFAULT_PASSWORD` in `.env` |
+| Google/Gmail, other SSO | Pre-authorized device account (preferred) | Test account already signed in on the device/emulator/CI image — never store the real provider password in `.env` |
+| Google/Gmail, other SSO | Bypass | Deep link / `auth_profile` + `NO_RESET` session reuse |
+| Google/Gmail, other SSO | Manual (last resort) | Avoid in CI; automating a provider's real consent UI is fragile and may violate its ToS |
 
 - Credentials live in `.env`/`.env.<env>` only — never in a committed context/flow doc, dataprovider, PO, or step
-- No production credentials — dev/stg/uat only
-- Fail fast if `TEST_MOBILE` is missing when login tests are collected
+- No production credentials, and no real personal SSO accounts — dev/stg/uat test accounts only
+- Fail fast if `TEST_MOBILE` is missing when OTP login tests are collected
 - Backend/SQL assertions: keep queries in `data/<app_slug>/` scripts — never in page layers
 
 ### Feature context vs automation
