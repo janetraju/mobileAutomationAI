@@ -109,6 +109,11 @@ class Settings(BaseSettings):
     device_name: str = Field(alias="DEVICE_NAME", default="emulator-5554")
     platform_version: str = Field(alias="PLATFORM_VERSION", default="14")
     udid: str | None = Field(alias="UDID", default=None)
+    # Comma-separated pools for pytest-xdist (see src/core/device_pool.py)
+    device_pool: str | None = Field(alias="DEVICE_POOL", default=None)
+    appium_port_pool: str | None = Field(alias="APPIUM_PORT_POOL", default=None)
+    android_system_port: int | None = Field(alias="ANDROID_SYSTEM_PORT", default=None)
+    ios_wda_local_port: int | None = Field(alias="IOS_WDA_LOCAL_PORT", default=None)
 
     app_path: str | None = Field(alias="APP_PATH", default=None)
     no_reset: bool = Field(alias="NO_RESET", default=True)
@@ -191,6 +196,11 @@ class Settings(BaseSettings):
     @property
     def is_ios(self) -> bool:
         return self.platform == "ios"
+
+    @property
+    def app_id(self) -> str | None:
+        """Android application id (package) or iOS bundle id."""
+        return self.bundle_id if self.is_ios else self.app_package
 
 
 def _validate_required(settings: Settings) -> None:

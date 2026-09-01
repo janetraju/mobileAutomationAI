@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import subprocess
 import time
 from contextlib import suppress
 
 from appium.webdriver.webdriver import WebDriver
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
+from src.core.device_helper import DeviceHelper
 from src.core.page_actions import PageActions
 from src.core.settings import get_settings
 from src.page_objects.cofee.login_po import LoginPo
@@ -48,35 +48,14 @@ class LoginActions(PageActions):
     def _advance_onboarding_carousel(self) -> None:
         """Tap the onboarding next arrow (no stable content-desc on early slides)."""
         size = self._driver.get_window_size()
-        self._driver.execute_script(
-            "mobile: clickGesture",
-            {
-                "x": int(size["width"] * 0.87),
-                "y": int(size["height"] * 0.70),
-            },
+        DeviceHelper(self._driver).tap_at(
+            int(size["width"] * 0.87),
+            int(size["height"] * 0.70),
         )
 
     def _relaunch_app_if_on_launcher(self) -> None:
-        """Bring CoFee back if a tap/reset left us on the Android home screen."""
-        settings = get_settings()
-        package = settings.app_package
-        activity = settings.app_activity
-        if not package:
-            return
-        try:
-            current = self._driver.current_package or ""
-        except Exception:
-            current = ""
-        if current == package:
-            return
-        if activity:
-            subprocess.run(
-                ["adb", "shell", "am", "start", "-W", "-n", f"{package}/{activity}"],
-                check=False,
-                capture_output=True,
-            )
-        with suppress(Exception):
-            self._driver.activate_app(package)
+        """Bring CoFee back if a tap/reset left us on the launcher / SpringBoard."""
+        DeviceHelper(self._driver).launch_if_not_foreground()
 
     def navigate_to_phone_entry_screen(self, max_taps: int = 8) -> None:
         """Advance onboarding carousel until the phone number screen is visible."""
@@ -163,39 +142,29 @@ class LoginActions(PageActions):
     def _send_digit_verified(self, digit: str, expected_length: int, retries: int = 4) -> None:
         """Send one digit into the shared input field, retrying on dropped keystrokes.
 
-        Uses `adb shell input text` rather than Appium's `send_keys()`: on
-        this Flutter EditText, `send_keys()` intermittently drops keystrokes
-        or even truncates already-entered characters under device load (
-        confirmed by direct comparison — the same sequence typed via adb was
-        100% reliable). Still verify + retry as a safety net.
+        On Android Flutter EditText, adb keystrokes are more reliable than
+        Appium send_keys. On iOS Simulator there is no adb — use send_keys.
 
         Counts digits only, not raw text length: the phone field auto-inserts
         a formatting space after 5 digits (e.g. "63210 20200"), which would
         otherwise inflate the length and make this return one digit early,
         silently dropping the next real digit.
         """
+        helper = DeviceHelper(self._driver)
         for _ in range(retries):
             digit_count = sum(c.isdigit() for c in self._read_text_safe())
             if digit_count >= expected_length:
                 return
-            subprocess.run(
-                ["adb", "shell", "input", "text", digit],
-                check=False,
-                capture_output=True,
-            )
+            if get_settings().is_ios:
+                field = self.wait_for_element_visible(self._login_po.loc_phone_input(), timeout=5)
+                field.send_keys(digit)
+            else:
+                helper.type_chars(digit, pause_s=0.15)
             time.sleep(0.15)
 
     def _tap_primary_cta(self, element) -> None:
         """Tap left-center of bottom CTA — right side overlaps the debug FAB."""
-        loc = element.location
-        size = element.size
-        self._driver.execute_script(
-            "mobile: clickGesture",
-            {
-                "x": int(loc["x"] + size["width"] * 0.35),
-                "y": int(loc["y"] + size["height"] / 2),
-            },
-        )
+        DeviceHelper(self._driver).tap_element(element, x_ratio=0.35)
 
     def submit_phone_number(self) -> None:
         """Tap Next to request OTP (avoid debug FAB on the right)."""

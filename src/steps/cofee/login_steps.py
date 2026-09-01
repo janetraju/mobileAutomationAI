@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
 from contextlib import suppress
 
 import allure
@@ -10,8 +9,8 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.common.exceptions import TimeoutException
 
 from src.core.assert_helper import assert_element_visible
+from src.core.device_helper import DeviceHelper
 from src.core.session_state import SessionState
-from src.core.settings import get_settings
 from src.page_actions.cofee.home_actions import HomeActions
 from src.page_actions.cofee.login_actions import LoginActions
 
@@ -21,12 +20,8 @@ def _active_profile() -> str:
 
 
 def _activate_app(driver: WebDriver) -> None:
-    settings = get_settings()
-    package = settings.app_package
-    if not package:
-        return
     with suppress(Exception):
-        driver.activate_app(package)
+        DeviceHelper(driver).activate_app()
 
 
 def _return_to_home_if_logged_in(driver: WebDriver) -> bool:
@@ -75,27 +70,8 @@ def user_ensures_logged_in_home(driver: WebDriver, mobile: str, otp: str) -> Non
 
 @allure.step("App reset for fresh login")
 def user_starts_from_fresh_install(driver: WebDriver) -> None:
-    """Clear app data and relaunch for a clean login path."""
-    settings = get_settings()
-    package = settings.app_package
-    activity = settings.app_activity
-    if not package:
-        raise ValueError("APP_PACKAGE is required for fresh install reset")
-    with suppress(Exception):
-        driver.terminate_app(package)
-    subprocess.run(["adb", "shell", "pm", "clear", package], check=False)
-    # Explicit launch — activate_app alone can leave the launcher after pm clear
-    if activity:
-        component = f"{package}/{activity}"
-        subprocess.run(
-            ["adb", "shell", "am", "start", "-W", "-n", component],
-            check=False,
-            capture_output=True,
-        )
-    else:
-        driver.activate_app(package)
-    with suppress(Exception):
-        driver.activate_app(package)
+    """Clear app data and relaunch for a clean login path (Android or iOS)."""
+    DeviceHelper(driver).clear_and_relaunch()
 
 
 @allure.step("User reaches phone login screen")

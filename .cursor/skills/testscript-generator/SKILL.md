@@ -30,12 +30,19 @@ Use this skill when:
 
 ## Prerequisites
 
-Before starting, ensure:
+Before starting **new** feature automation, ensure:
 
 - `AGENTS.md`
-- Approved `docs/context/<app_slug>-<feature>-testcases.md` *(if available)*
-- `docs/<app_slug>-flow.md`
+- `docs/context/<app_slug>-<feature>-context.md`
+- Approved `docs/context/<app_slug>-<feature>-testcases.md` (**Approved: yes**)
+- `docs/<app_slug>-flow.md` (update status links when Done)
 - `.env` (`APP_SLUG`, `PLATFORM`)
+
+If context or approved testcases are missing: stop and run `get-context` →
+`testcase-generator` (with approval) first.
+
+Exception: fixing an existing flaky test / locator may proceed without new
+testcases when the feature already has approved docs.
 
 Never author Page Objects from product source, APK analysis, or Figma alone —
 locators get confirmed live in Step 3.

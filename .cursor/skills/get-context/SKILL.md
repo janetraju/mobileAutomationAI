@@ -30,7 +30,18 @@ Generate:
 docs/context/<app_slug>-<feature-slug>-context.md
 ```
 
-Commit this file. It serves as the discovery record for downstream skills (see Step 7).
+Start from the repo template:
+
+```text
+docs/context/_templates/context-template.md
+```
+
+The written file **must** include the **Freshness** table and optional **Source
+links** (Jira / PRD / Figma). Commit this file. It is the discovery record for
+downstream skills (see Step 7).
+
+**Gate:** do not skip context. `testcase-generator` and `testscript-generator`
+require this file (plus approved testcases) before automation.
 
 ## Supported Sources
 
@@ -170,20 +181,27 @@ Limit follow-up questions to **3–6**.
 
 ## Step 6 — Generate the Context Document
 
-Create the file at the path in **Output**. Include:
+Create the file at the path in **Output**, following
+`docs/context/_templates/context-template.md`. Include:
 
 | Section | Description |
 |---------|-------------|
-| Feature | Name, slug, and source artifacts |
-| Artifact Status | Available / Partial / Missing |
+| Freshness | Last updated, env, device confirmation, owner |
+| Source links | Jira / PRD / Figma / walkthrough status |
+| Feature | Name, slug, and platforms |
+| Artifact Status | Available / Partial / Missing (in Source links) |
 | Screens in Scope | Purpose of each screen |
 | Happy Path | Screen-to-screen flow |
-| Screen Elements | Candidate UI elements *(hypotheses only)* |
 | Business Rules | Requirements and acceptance criteria |
 | Edge Cases | Known scenarios or **Unknown** |
-| Regression Areas | Existing bugs and impacted areas |
+| Test data needs | How data is supplied — **no secrets** |
+| Known product quirks | Device/UI quirks |
 | Existing Automation | Current Page Objects and tests |
 | Open Questions | Remaining gaps |
+
+Treat **Screen Elements / locators** as hypotheses only until
+`discover-mobile-locators` confirms them live. Prefer linking to PO paths over
+pasting unverified selectors into context.
 
 Use:
 

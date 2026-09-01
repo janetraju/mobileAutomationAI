@@ -4,13 +4,11 @@ description: >-
   Generate structured, device-observable mobile test cases across all
   priorities (P0/P1/P2) and categories (happy path, negative, edge,
   permission/OS dialog, state/navigation, accessibility, platform,
-  regression) for any app in this repo. Prefers
-  docs/context/<app_slug>-<feature>-context.md from get-context; falls back
-  to docs/<app_slug>-flow.md (fed by screenshots, Figma, or product-repo
-  analysis) when no context file exists yet. Use when the user asks for
-  P0/smoke cases, test cases for a feature, or "which flows to automate
-  first." Presents a draft in chat and requires approval before writing
-  docs/context/<app_slug>-<feature>-testcases.md.
+  regression) for any app in this repo. Requires
+  docs/context/<app_slug>-<feature>-context.md from get-context. Use when
+  the user asks for P0/smoke cases, test cases for a feature, or "which
+  flows to automate first." Presents a draft in chat and requires approval
+  before writing docs/context/<app_slug>-<feature>-testcases.md.
 ---
 # Extract Test Cases
 
@@ -40,22 +38,24 @@ Review the following in order.
 **Required**
 
 - `AGENTS.md`
-- `docs/context/<app_slug>-<feature>-context.md`
-
-**Fallback** (if no context document exists)
-
-- `docs/<app_slug>-flow.md`
-- Screenshots, Figma, or product source shared in the current session
+- `docs/context/<app_slug>-<feature>-context.md` (from `get-context`; template:
+  `docs/context/_templates/context-template.md`)
+- Freshness table on that context file must be filled
 
 **Reference**
 
+- `docs/<app_slug>-flow.md` (index only — not a substitute for context)
 - `tests/test/<app_slug>/` (avoid duplicate coverage)
 - `src/page_objects/<app_slug>/` (understand implemented screens)
 
-If no feature documentation exists:
+If no feature **context** document exists:
 
-- Ask the user to confirm the feature, or
-- Run `get-context` first.
+- Stop and run **`get-context`** first (do not invent cases from chat alone)
+- Do not treat the flow index as enough product truth for a new feature
+
+When writing the approved file, start from
+`docs/context/_templates/testcases-template.md` and set **Approved: yes** only
+after the user explicitly approves.
 
 ---
 

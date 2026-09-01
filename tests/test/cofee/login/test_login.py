@@ -16,10 +16,13 @@ pytestmark = [pytest.mark.xdist_group(PARALLEL_GROUP_AUTH)]
 @allure.feature("Login")
 @pytest.mark.e2e
 @pytest.mark.p0
+@pytest.mark.android
+@pytest.mark.ios
 @pytest.mark.login
+@pytest.mark.fresh
 @pytest.mark.auth_profile("default")
 class TestLogin:
-    """Phone + OTP login scenarios."""
+    """Phone + OTP login scenarios — owns a clean app (no shared login-first)."""
 
     @allure.story("Valid credentials")
     @allure.severity(allure.severity_level.CRITICAL)
