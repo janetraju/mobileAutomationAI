@@ -16,7 +16,6 @@ from dataprovider.dp_enable_partial_payment import (
     get_entry_point_test_data,
     get_threshold_boundary_test_data,
 )
-from src.steps.cofee.login_steps import user_ensures_logged_in_home
 from src.steps.cofee.payment_steps import (
     user_enables_partial_payment_and_verifies,
     user_opens_kebab_menu_from_all_payments,
@@ -48,6 +47,7 @@ def _open_kebab_menu_from_entry_point(
 @allure.feature("Payments")
 @pytest.mark.e2e
 @pytest.mark.android
+@pytest.mark.authenticated
 @pytest.mark.auth_profile("default")
 class TestEnablePartialPayment:
     """Enable Partial Payment — threshold, entry points, and core flow."""
@@ -62,8 +62,6 @@ class TestEnablePartialPayment:
     def test_enable_partial_payment_on_eligible_payment(
         self,
         driver,
-        mobile: str,
-        otp: str,
         group_name: str,
         member_name: str,
         member_mobile: str,
@@ -73,7 +71,6 @@ class TestEnablePartialPayment:
         """TC-enable-partial-payment-HP-01: enable partial payment and verify
         the option disappears immediately (no refresh needed)."""
         allure.dynamic.title(f"Enable partial payment on ₹{amount} request ({note})")
-        user_ensures_logged_in_home(driver, mobile, otp)
         user_sets_up_group_with_payment_request(
             driver, member_name, member_mobile, group_name, amount, note
         )
@@ -90,8 +87,6 @@ class TestEnablePartialPayment:
     def test_partial_payment_option_visibility_at_threshold(
         self,
         driver,
-        mobile: str,
-        otp: str,
         group_name: str,
         member_name: str,
         member_mobile: str,
@@ -102,7 +97,6 @@ class TestEnablePartialPayment:
         """TC-enable-partial-payment-NEG-01: ₹1,999 → option absent,
         ₹2,000 → option present (confirmed live, exact boundary)."""
         allure.dynamic.title(f"Partial payment option at ₹{amount} (expect={expected_option})")
-        user_ensures_logged_in_home(driver, mobile, otp)
         user_sets_up_group_with_payment_request(
             driver, member_name, member_mobile, group_name, amount, note
         )
@@ -119,8 +113,6 @@ class TestEnablePartialPayment:
     def test_partial_payment_option_available_from_all_entry_points(
         self,
         driver,
-        mobile: str,
-        otp: str,
         group_name: str,
         member_name: str,
         member_mobile: str,
@@ -132,7 +124,6 @@ class TestEnablePartialPayment:
         (Monthly Insights), and the global 'All payments' tab all expose the
         same kebab-menu action for the same eligible payment."""
         allure.dynamic.title(f"Enable Partial Payment option via {entry_point}")
-        user_ensures_logged_in_home(driver, mobile, otp)
         user_sets_up_group_with_payment_request(
             driver, member_name, member_mobile, group_name, amount, note
         )

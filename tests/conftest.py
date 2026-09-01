@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "tests"))
 
+from src.core.device_pool import apply_device_pool_for_worker
 from src.core.session_manager import get_session_manager
 from src.core.settings import get_settings, reset_settings_cache
 
@@ -41,7 +42,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Register custom markers."""
+    """Register markers and bind this xdist worker to its own device."""
     config.addinivalue_line("markers", "e2e: End-to-end UI tests")
     config.addinivalue_line("markers", "p0: Priority 0 smoke tests")
     config.addinivalue_line("markers", "p1: Priority 1 tests")
@@ -51,8 +52,34 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "ignore: Excluded from default runs")
     config.addinivalue_line(
         "markers",
-        'auth_profile(name): Credential profile for session reuse (e.g. "default", "admin")',
+        'auth_profile(name): Credential profile for Appium session reuse (e.g. "default", "admin")',
     )
+    config.addinivalue_line(
+        "markers",
+        "authenticated: Ensure logged-in home before the test (no login-order dependency)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "fresh: Test owns a clean app (e.g. login); no auto login-from-session",
+    )
+
+    # Each xdist worker process must claim a unique device before Settings load.
+    assignment = apply_device_pool_for_worker()
+    if assignment is not None:
+        reset_settings_cache()
+        port_note = (
+            f"appium=:{assignment.appium_port}"
+            if assignment.appium_port is not None
+            else "appium=shared"
+        )
+        extra = ""
+        if assignment.android_system_port is not None:
+            extra = f" systemPort={assignment.android_system_port}"
+        print(
+            f"[device-pool] {assignment.worker_id} → "
+            f"{assignment.device_name} ({port_note}{extra})",
+            flush=True,
+        )
 
 
 def _apply_cli_overrides(config: pytest.Config) -> None:
@@ -61,7 +88,8 @@ def _apply_cli_overrides(config: pytest.Config) -> None:
         os.environ["APP_ENV"] = config.getoption("--env")
     if config.getoption("--platform"):
         os.environ["PLATFORM"] = config.getoption("--platform")
-    if config.getoption("--device"):
+    # --device is for sequential runs only; under xdist, DEVICE_POOL owns assignment
+    if config.getoption("--device") and not os.environ.get("PYTEST_XDIST_WORKER"):
         os.environ["DEVICE_NAME"] = config.getoption("--device")
     if config.getoption("--headless-emulator"):
         os.environ["HEADLESS_EMULATOR"] = "true"
@@ -122,6 +150,29 @@ def _explicit_wait_timeout(settings) -> None:
     _ = settings.explicit_wait_timeout
 
 
+@pytest.fixture(autouse=True)
+def _isolate_app_state(request: pytest.FixtureRequest):
+    """Bring the app to a known state from markers — tests do not need login-first order.
+
+    - ``authenticated``: login (or reuse on this device) until home is reachable
+    - ``fresh``: leave setup to the test (login flows call pm clear themselves)
+    """
+    is_fresh = request.node.get_closest_marker("fresh") is not None
+    is_authenticated = request.node.get_closest_marker("authenticated") is not None
+
+    if is_fresh or not is_authenticated:
+        yield
+        return
+
+    from src.steps.cofee.login_steps import user_ensures_logged_in_home
+
+    driver = request.getfixturevalue("driver")
+    mobile = request.getfixturevalue("mobile")
+    otp = request.getfixturevalue("otp")
+    user_ensures_logged_in_home(driver, mobile, otp)
+    yield
+
+
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
     """Attach diagnostics on test failure."""
@@ -169,28 +220,24 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Skip platform-mismatched and ignored tests; order login before dependent flows."""
+    """Skip platform-mismatched and ignored tests.
+
+    A test with both ``android`` and ``ios`` markers runs on either platform.
+    A test with neither runs on both (e.g. unit tests).
+    """
     settings = get_settings()
     platform = settings.platform
-    skip_android = pytest.mark.skip(reason=f"Test requires iOS, running {platform}")
-    skip_ios = pytest.mark.skip(reason=f"Test requires Android, running {platform}")
+    skip_wrong_platform = pytest.mark.skip(reason=f"Not applicable on {platform}")
     skip_ignore = pytest.mark.skip(reason="Marked @pytest.mark.ignore")
 
     for item in items:
         if item.get_closest_marker("ignore"):
             item.add_marker(skip_ignore)
-        if item.get_closest_marker("android") and platform != "android":
-            item.add_marker(skip_android)
-        if item.get_closest_marker("ios") and platform != "ios":
-            item.add_marker(skip_ios)
-
-    def _sort_key(item: pytest.Item) -> tuple[int, str]:
-        """Login smoke first so session reuse works for downstream P0 tests."""
-        path = str(item.fspath)
-        if "/login/" in path:
-            return (0, path)
-        if "/groups/" in path:
-            return (1, path)
-        return (2, path)
-
-    items.sort(key=_sort_key)
+        names = {marker.name for marker in item.iter_markers()}
+        has_android = "android" in names
+        has_ios = "ios" in names
+        if has_android or has_ios:
+            if platform == "android" and not has_android:
+                item.add_marker(skip_wrong_platform)
+            if platform == "ios" and not has_ios:
+                item.add_marker(skip_wrong_platform)

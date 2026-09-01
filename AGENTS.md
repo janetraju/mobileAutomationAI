@@ -35,6 +35,7 @@ invoke install
 invoke install-precommit
 invoke appium:install-drivers
 invoke emulator:start         # Android only
+invoke simulator:start        # iOS Simulator — macOS + Xcode only
 invoke app:install            # install APK from APP_PATH
 invoke appium:start           # separate terminal
 invoke test --markers "e2e and p0"
@@ -48,6 +49,7 @@ invoke report
 | `invoke install` | Install Python deps (`pip install -e .`) |
 | `invoke install-precommit` | Install git pre-commit hooks |
 | `invoke emulator:start` | Start Android emulator + wait for device |
+| `invoke simulator:start` | Boot iOS Simulator (`simctl`) — **macOS only** |
 | `invoke app:analyze` | Extract package/activity/type from APK |
 | `invoke app:install` | Install APK on connected device |
 | `invoke ui:dump --screen=<name>` | Save UI tree to `target/ui-dumps/<name>.xml` |
@@ -104,7 +106,8 @@ Import direction: **tests → steps → page_actions → page_objects → core**
 - Locators only in `*_po.py` under `# --- Locators ---`
 - No page object imports in tests or steps
 - No `page_actions` imports in tests when a step exists for the flow
-- Platform branching only in page objects (`self._platform` or `*_android_po.py` / `*_ios_po.py`)
+- Locator platform branching only in page objects (`self._platform` or `*_android_po.py` / `*_ios_po.py`)
+- Device OS ops (clear app, launch, coordinate tap, adb text) go through `src/core/device_helper.py` — no bare `"adb"` in steps/actions
 - Sync WebDriver only — never mix async Appium clients
 
 ### Locator strategy
@@ -141,9 +144,19 @@ Every UI test:
 # + feature, story, severity
 ```
 
+**Isolation (do not rely on login-test-first order):**
+
+| Marker | When to use |
+|--------|-------------|
+| `@pytest.mark.authenticated` | Feature tests that need home — fixture logs in (or reuses) on **this** device |
+| `@pytest.mark.fresh` | Login / clean-app tests that call `user_logs_in_with_phone_otp` (pm clear) themselves |
+
+- Do **not** call `user_ensures_logged_in_home` in the test body when using `authenticated` — `conftest` does it
+- You may run a single payments/groups test alone; it will still reach home first
 - `@pytest.mark.ignore` excluded from default runs
 - Use `PARALLEL_GROUP_*` when sharing a session/device with other features
 - Dataproviders: `get_*_test_data()` → `list[pytest.param(..., id="...")]` — **no secrets**
+- **Flake retries:** default `--reruns 1 --reruns-delay 2` (pytest.ini). Use `--reruns 0` when debugging. Optional `@pytest.mark.flaky(reruns=2)` for a known noisy test — prefer fixing root cause over raising global reruns
 
 ### Code quality
 
@@ -173,21 +186,39 @@ Every UI test:
 
 | Input | Role |
 |-------|------|
-| Screenshots / walkthrough / Figma / product repo / PRD | **Flow spec** (what to automate) |
-| Live device dump / Appium MCP | **Locator source of truth** (how to find elements) |
+| `docs/context/*-context.md` (+ PRD / Figma / Jira / walkthrough) | **Product truth** — *what* to automate |
+| Live device dump / Appium MCP | **Locator truth** — *how* to find elements |
+| `docs/<app_slug>-flow.md` | **Index only** — status + links to context/testcases |
 
-Read **`docs/cofee-flow.md`** (and `docs/context/` when present) before writing tests.
-Do not invent flows or selectors not documented **or** inspected on device.
+**Required before new feature automation:**
+
+1. `docs/context/<app_slug>-<feature>-context.md` exists (use `_templates/context-template.md`)
+2. `docs/context/<app_slug>-<feature>-testcases.md` exists and is marked **Approved: yes**
+3. Locators confirmed live (hypotheses in context are not enough)
+4. Flow index row updated in `docs/<app_slug>-flow.md`
+
+**Freshness:** every context/testcases file has a Freshness table (last updated, env,
+device confirmation, owner). Update it when product behavior changes.
+
+**Secrets:** never put phones, OTPs, or passwords in context/flow docs.
+
+Read **`docs/cofee-flow.md`** and the linked `docs/context/` files before writing
+tests. Do not invent flows or selectors not documented **or** inspected on device.
 
 ---
 
 ## Key `.env` variables
 
 `APP_NAME`, `APP_SLUG`, `APP_TYPE`, `APP_ENV`, `PLATFORM`, `APPIUM_HOST`,
-`APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
-`API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`, `DEFAULT_USERNAME`,
-`DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`,
-`EXPLICIT_WAIT_TIMEOUT`
+`APPIUM_PORT`, `DEVICE_NAME`, `DEVICE_POOL`, `APPIUM_PORT_POOL`, `APP_PATH`,
+`APP_PACKAGE`, `APP_ACTIVITY`, `API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`,
+`DEFAULT_USERNAME`, `DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`,
+`NO_RESET`, `EXPLICIT_WAIT_TIMEOUT`
+
+**Parallel:** set `DEVICE_POOL` (comma-separated) with length ≥ pytest `-n`.
+Each xdist worker (`gw0`, `gw1`, …) binds to one device via
+`src/core/device_pool.py`. Optional `APPIUM_PORT_POOL`; otherwise shared Appium
++ unique `ANDROID_SYSTEM_PORT` / `IOS_WDA_LOCAL_PORT` per worker.
 
 ---
 

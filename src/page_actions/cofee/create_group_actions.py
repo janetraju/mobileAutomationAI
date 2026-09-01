@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import subprocess
 from contextlib import suppress
 
 from appium.webdriver.webdriver import WebDriver
 from selenium.common.exceptions import TimeoutException
 
+from src.core.device_helper import DeviceHelper
 from src.core.page_actions import PageActions
 from src.page_actions.cofee.login_actions import LoginActions
 from src.page_objects.cofee.create_group_po import CreateGroupPo
@@ -22,27 +22,11 @@ class CreateGroupActions(PageActions):
 
     def _tap_left_center(self, element, x_ratio: float = 0.35) -> None:
         """Tap left portion of CTA — avoids dev debug FAB on the right."""
-        loc = element.location
-        size = element.size
-        self._driver.execute_script(
-            "mobile: clickGesture",
-            {
-                "x": int(loc["x"] + size["width"] * x_ratio),
-                "y": int(loc["y"] + size["height"] / 2),
-            },
-        )
+        DeviceHelper(self._driver).tap_element(element, x_ratio=x_ratio)
 
     def _adb_tap_element(self, element, x_ratio: float = 0.5) -> None:
-        """Tap via adb using element bounds (more reliable than Flutter click/gesture)."""
-        loc = element.location
-        size = element.size
-        x = int(loc["x"] + size["width"] * x_ratio)
-        y = int(loc["y"] + size["height"] / 2)
-        subprocess.run(
-            ["adb", "shell", "input", "tap", str(x), str(y)],
-            check=False,
-            capture_output=True,
-        )
+        """Tap via device helper (adb on Android, XCUITest tap on iOS)."""
+        DeviceHelper(self._driver).tap_element(element, x_ratio=x_ratio)
 
     def _type_digit_by_digit(self, field, text: str) -> None:
         """Type text digit-by-digit (reliable on Flutter EditText)."""

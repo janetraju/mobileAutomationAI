@@ -32,7 +32,6 @@ def build_capabilities(
         "appium:noReset": cfg.no_reset,
         "appium:fullReset": cfg.full_reset,
         "appium:autoGrantPermissions": cfg.auto_grant_permissions,
-        "appium:adbExecTimeout": 120000,
     }
 
     if cfg.udid:
@@ -40,7 +39,11 @@ def build_capabilities(
 
     if cfg.is_android:
         caps["appium:automationName"] = "UiAutomator2"
+        caps["appium:adbExecTimeout"] = 120000
         caps["appium:settings[waitForIdleTimeout]"] = cfg.android_idle_timeout
+        if cfg.android_system_port is not None:
+            # Unique per parallel worker when sharing one Appium server
+            caps["appium:systemPort"] = cfg.android_system_port
         resolved_app = _resolve_app_path(cfg.app_path)
         if resolved_app:
             caps["appium:app"] = resolved_app
@@ -50,10 +53,15 @@ def build_capabilities(
             caps["appium:appActivity"] = cfg.app_activity
     else:
         caps["appium:automationName"] = "XCUITest"
+        # iOS Simulator: software keyboard so send_keys works
+        caps["appium:connectHardwareKeyboard"] = False
+        caps["appium:wdaLaunchTimeout"] = 120000
+        if cfg.ios_wda_local_port is not None:
+            caps["appium:wdaLocalPort"] = cfg.ios_wda_local_port
         resolved_app = _resolve_app_path(cfg.app_path)
         if resolved_app:
             caps["appium:app"] = resolved_app
-        elif cfg.bundle_id:
+        if cfg.bundle_id:
             caps["appium:bundleId"] = cfg.bundle_id
 
     if cfg.record_video:

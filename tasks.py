@@ -116,6 +116,44 @@ def install_precommit(c):
     c.run("pre-commit install", pty=True)
 
 
+def _is_macos() -> bool:
+    return os.uname().sysname == "Darwin"
+
+
+@task(name="simulator:start")
+def simulator_start(c, device=""):
+    """Boot an iOS Simulator (macOS + Xcode only). Linux/Windows cannot run it."""
+    if not _is_macos():
+        raise SystemExit(
+            "ERROR: iOS Simulator requires macOS and Xcode.\n"
+            "This host cannot boot a Simulator. Use an Android emulator here, "
+            "or run on a Mac:\n"
+            "  invoke simulator:start --device='iPhone 16'\n"
+            "  PLATFORM=ios pytest -m 'e2e and p0 and ios'"
+        )
+    if not shutil.which("xcrun"):
+        raise SystemExit("ERROR: xcrun not found. Install Xcode command-line tools.")
+    name = device or os.environ.get("DEVICE_NAME") or os.environ.get("SIMULATOR_NAME") or "iPhone 16"
+    print(f"Booting iOS Simulator: {name}")
+    c.run(f'xcrun simctl boot "{name}"', warn=True, pty=True)
+    c.run("open -a Simulator", warn=True, pty=True)
+    timeout = int(os.environ.get("DEVICE_WAIT_TIMEOUT", "120"))
+    elapsed = 0
+    while elapsed < timeout:
+        result = subprocess.run(
+            ["xcrun", "simctl", "list", "devices", "booted"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if name in result.stdout or "Booted" in result.stdout:
+            print(f"Simulator ready: {name}")
+            return
+        time.sleep(2)
+        elapsed += 2
+    raise SystemExit(f"ERROR: Simulator '{name}' did not boot within {timeout}s.")
+
+
 @task(name="emulator:start")
 def emulator_start(c, avd=None, headless=False):
     """Start Android emulator and wait until it is ready (requires ANDROID_HOME)."""
@@ -275,8 +313,15 @@ def clean(c):
 
 
 @task
-def test(c, markers="", env="", platform="", parallel="auto", extra=""):
-    """Clean, auto-fix lint (ruff + black), and run pytest."""
+def test(c, markers="", env="", platform="", parallel="auto", reruns="", extra=""):
+    """Clean, auto-fix lint (ruff + black), and run pytest.
+
+    For parallel (-n), set DEVICE_POOL in .env with one device per worker.
+    Example: DEVICE_POOL=emulator-5554,emulator-5556 and --parallel 2
+
+    Flake retries default to 1 (pytest.ini). Override with --reruns 0 to disable
+    or --reruns 2 for more attempts while debugging CI noise.
+    """
     clean(c)
     lint(c, fix=True)
     cmd = "pytest"
@@ -288,6 +333,8 @@ def test(c, markers="", env="", platform="", parallel="auto", extra=""):
         cmd += f" --platform={platform}"
     if parallel:
         cmd += f" -n {parallel}"
+    if reruns != "":
+        cmd += f" --reruns {reruns}"
     if extra:
         cmd += f" {extra}"
     c.run(cmd, pty=True)

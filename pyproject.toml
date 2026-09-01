@@ -17,6 +17,7 @@ dependencies = [
     "psycopg[binary]==3.2.3",
     "pydantic-settings==2.6.1",
     "pytest==8.3.4",
+    "pytest-rerunfailures==15.0",
     "pytest-xdist==3.6.1",
     "pytest-xdist-worker-stats==0.3.0",
     "python-dotenv==1.0.1",
