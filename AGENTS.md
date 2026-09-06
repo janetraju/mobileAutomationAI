@@ -35,11 +35,12 @@ already documented).
 | 4 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
 | 5 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
 | 6 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 7 | `mobile-coverage-audit` | Nothing — runs before merging | A check that the generated code follows the repo contract |
-| 8 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 7 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 8 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 9 | `teardown` | Nothing | Device/session reset, ready for the next run |
 
 Steps 1–3 happen once per app (or once per feature, for context/auth
-changes). Steps 4–8 repeat for every new feature or test run.
+changes). Steps 4–9 repeat for every new feature or test run.
 
 You never need to open a code editor, write a locator, or touch Python to
 complete this pipeline — that's what `mobile-test-automation` is for.
@@ -81,8 +82,11 @@ create-mobile-framework-structure
   → mobile-test-report
   → teardown
 
-# Any time before merging
+# Any time (standalone coverage snapshot — does not gate merging)
 mobile-coverage-audit
+
+# Before merging
+pr-review-changes
 ```
 
 ### Skill roles
@@ -95,7 +99,8 @@ mobile-coverage-audit
 | `mobile-test-design` | Generates P0/P1/P2 test cases for approval | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
-| `mobile-coverage-audit` | Reviews automation and coverage against this Repo contract before merge | Review notes / merge gate |
+| `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
+| `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
 | `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 
 ---
@@ -178,9 +183,11 @@ This tree is identical across every project using this framework — only the
 
 Shared behavioral rules for every agent, skill, and contributor, on every
 project using this framework. Skills implement *workflows*; they do not
-redefine these rules. `mobile-test-automation` and `mobile-coverage-audit`
-enforce this section automatically — non-coders don't need to apply it by
-hand.
+redefine these rules. `mobile-test-automation` applies this section
+automatically as it generates code; `pr-review-changes` reviews a diff
+against it before merge — non-coders don't need to apply it by hand either
+way. `mobile-coverage-audit` is a separate, read-only coverage-gap report
+(test-design completeness) — it does not review code against this section.
 
 ### Architecture & layer boundaries
 
