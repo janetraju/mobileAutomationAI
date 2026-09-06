@@ -37,10 +37,11 @@ already documented).
 | 6 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
 | 7 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
 | 8 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 9 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 9 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
+| 10 | `teardown` | Nothing | Device/session reset, ready for the next run |
 
 Steps 1–3 happen once per app (or once per feature, for context/auth
-changes). Steps 4–9 repeat for every new feature or test run.
+changes). Steps 4–10 repeat for every new feature or test run.
 
 You never need to open a code editor, write a locator, or touch Python to
 complete this pipeline — that's what `mobile-test-automation` is for.
@@ -87,6 +88,7 @@ mobile-coverage-audit
 
 # Before merging
 pr-review-changes
+  → add-pr-description
 ```
 
 ### Skill roles
@@ -101,6 +103,7 @@ pr-review-changes
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
 | `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
+| `add-pr-description` | Drafts a reviewer-friendly PR description from the actual commits/diff, then opens/updates the PR after approval | PR created or updated via `gh pr create` / `gh pr edit` |
 | `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 
 ---
