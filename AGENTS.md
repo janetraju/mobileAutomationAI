@@ -33,18 +33,20 @@ already documented).
 | 2 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
 | 3 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
 | 4 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
-| 5 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
-| 6 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 7 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
-| 8 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 9 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
-| 10 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 5 | `discover-mobile-locators` | Confirm the flow on a live device when asked | Confirmed locators, ready to implement against |
+| 6 | `mobile-test-automation` | Nothing further — implements against the confirmed locators | Working, runnable automation — written for you |
+| 7 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
+| 8 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 9 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 10 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
+| 11 | `teardown` | Nothing | Device/session reset, ready for the next run |
 
 Steps 1–3 happen once per app (or once per feature, for context/auth
-changes). Steps 4–10 repeat for every new feature or test run.
+changes). Steps 4–11 repeat for every new feature or test run.
 
 You never need to open a code editor, write a locator, or touch Python to
-complete this pipeline — that's what `mobile-test-automation` is for.
+complete this pipeline — that's what `discover-mobile-locators` and
+`mobile-test-automation` are for.
 
 ---
 
@@ -53,7 +55,8 @@ complete this pipeline — that's what `mobile-test-automation` is for.
 | Document | Owns |
 |----------|------|
 | **`AGENTS.md`** (this file) | Always-on **repo contract** — architecture, layers, waits, assertions, stability, markers; locator *policy* (never invent; confirm live) |
-| **`mobile-test-automation`** | Locator **priority, naming, dumps**, live UI-dump/MCP workflow, and layered code generation |
+| **`discover-mobile-locators`** | Locator **priority, naming, dumps**, and the live UI-dump/MCP workflow |
+| **`mobile-test-automation`** | Layered code generation (Page Objects → Actions → Steps → Data Provider → Tests) from confirmed locators |
 | **Other `.cursor/skills/*/SKILL.md`** | Task workflows only — do not restate repo contract |
 
 Skills must **not** restate layer rules, wait policy, or markers — they
@@ -79,6 +82,7 @@ create-mobile-framework-structure
   → get-mobile-context
   → get-mobile-auth        (only if credentials/OTP strategy isn't set yet)
   → mobile-test-design
+  → discover-mobile-locators
   → mobile-test-automation
   → mobile-test-report
   → teardown
@@ -99,7 +103,8 @@ pr-review-changes
 | `get-mobile-context` | Feature intake from PRD, Figma, Jira, product source, or a walkthrough | `docs/context/<app_slug>-<feature>-context.md` |
 | `get-mobile-auth` | Chooses & documents the OTP/credential strategy for the app; wires `.env` | `.env` vars + flow-doc *Known blockers / Test data* section |
 | `mobile-test-design` | Generates P0/P1/P2 test cases for approval | `docs/context/<app_slug>-<feature>-testcases.md` |
-| `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
+| `discover-mobile-locators` | Captures and verifies UI locators live via `ui:dump` + Appium MCP; owns locator priority, PO naming, dump paths | Confirmed locators handed off to `mobile-test-automation` |
+| `mobile-test-automation` | Implements the approved scenario end-to-end across the four-layer POM using confirmed locators; also the skill for editing a single layer file or fixing a flaky test/layer issue | Working E2E automation (layered files) |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
 | `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
@@ -215,7 +220,7 @@ Import direction: **tests → steps → page_actions → page_objects → core**
 only — confirm every selector on a running app before treating a PO as final.
 
 Full priority order, PO naming (`btn_` / `find_*` / `loc_*`), and dump paths
-are handled by **`mobile-test-automation`**.
+are handled by **`discover-mobile-locators`**.
 
 ### Wait & stability
 
@@ -315,7 +320,7 @@ All of the above are set for you by `create-mobile-framework-structure` and
 **Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.
 **Enable:** restart the editor / reload MCP → toggle **appium-mcp**.
 
-Walkthrough steps live in **`mobile-test-automation`**. Screenshots →
+Walkthrough steps live in **`discover-mobile-locators`**. Screenshots →
 `target/mcp-screenshots/` when `NO_UI=true`.
 
 ### Figma MCP

@@ -118,7 +118,7 @@ Re-dump after animations, keyboard, or navigation.
 ### Step 4 — Confirm Locators for Handoff
 
 Apply **Locator strategy** above. Summarize confirmed selectors in chat (or
-directly into the PO during `testscript-generator`) — do **not** commit
+directly into the PO during `mobile-test-automation`) — do **not** commit
 locator sheets under `docs/`.
 
 | Page Object | Element | Strategy | Locator | Confirmed |
@@ -136,7 +136,7 @@ PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobil
 
 ### Step 6 — Hand Off
 
-→ `testscript-generator` (do **not** author `*_po.py` in this skill).
+→ `mobile-test-automation` (do **not** author `*_po.py` in this skill).
 
 ## Rules
 
@@ -146,4 +146,4 @@ PO name = method stem (`input_mobile` → `find_input_mobile` / `loc_input_mobil
 
 ## Related Skills
 
-`testscript-generator` · `get-context` · [AGENTS.md](../../../AGENTS.md)
+`mobile-test-automation` · `get-mobile-context` · [AGENTS.md](../../../AGENTS.md)
