@@ -33,18 +33,22 @@ already documented).
 | 2 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
 | 3 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
 | 4 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
-| 5 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
-| 6 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
-| 7 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 8 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
-| 9 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 10 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
-| 11 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 5 | `mobile-test-data` | Decide where a feature's test data lives (once, if it needs backend records beyond login) | A documented data strategy — no silent accumulation |
+| 6 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
+| 7 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
+| 8 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
+| 9 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 10 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 11 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
+| 12 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| — | `mobile-ci-pipeline` | Nothing — run once per app, whenever local execution stops being enough | A CI workflow running this suite instead of a shared dev machine |
 
-Steps 1–4 happen once per app (or once per feature, for context/auth
+Steps 1–5 happen once per app (or once per feature, for context/auth/data
 changes) — though re-run `mobile-env-doctor` (step 1) any time a run feels
-flaky for no code reason, not just once at the start. Steps 5–11 repeat for
-every new feature or test run.
+flaky for no code reason, not just once at the start. Steps 6–12 repeat for
+every new feature or test run. `mobile-ci-pipeline` is a one-time setup
+step, run whenever it makes sense for the project rather than at a fixed
+point in the sequence.
 
 You never need to open a code editor, write a locator, or touch Python to
 complete this pipeline — that's what `mobile-test-automation` is for.
@@ -84,6 +88,7 @@ create-mobile-framework-structure
 # Per feature
   → get-mobile-context
   → get-mobile-auth        (only if credentials/OTP strategy isn't set yet)
+  → mobile-test-data       (only if the feature needs backend data beyond login)
   → mobile-test-design
   → mobile-test-automation
   → mobile-test-report
@@ -91,6 +96,9 @@ create-mobile-framework-structure
 
 # Any time (standalone coverage snapshot — does not gate merging)
 mobile-coverage-audit
+
+# Once per app, whenever local execution stops being enough
+mobile-ci-pipeline
 
 # Before merging
 pr-review-changes
@@ -105,10 +113,12 @@ pr-review-changes
 | `create-mobile-framework-structure` | Bootstraps a new app: APK/IPA analysis, `APP_REGISTRY`, `.env`, four-layer folder skeleton | Registered app + folder skeleton + `docs/<app_slug>-flow.md` stub |
 | `get-mobile-context` | Feature intake from PRD, Figma, Jira, product source, or a walkthrough | `docs/context/<app_slug>-<feature>-context.md` |
 | `get-mobile-auth` | Chooses & documents the OTP/credential strategy for the app; wires `.env` | `.env` vars + flow-doc *Known blockers / Test data* section |
+| `mobile-test-data` | Decides how a feature's backend test data is created and cleaned up — isolated vs. shared fixtures, seeding, growth ceiling or reset | Documented **Test Data** section in `docs/<app_slug>-flow.md`, optional seed scripts under `data/<app_slug>/` |
 | `mobile-test-design` | Generates P0/P1/P2 test cases for approval | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
+| `mobile-ci-pipeline` | Packages the suite for CI (hardware-accelerated emulator/simulator, `mobile-env-doctor` checks, Allure artifact upload) instead of a shared dev machine | `.github/workflows/mobile-tests.yml` (or equivalent) |
 | `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
 | `add-pr-description` | Drafts a reviewer-friendly PR description from the actual commits/diff, then opens/updates the PR after approval | PR created or updated via `gh pr create` / `gh pr edit` |
 | `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
@@ -242,6 +252,22 @@ are handled by **`mobile-test-automation`**.
 - Re-query elements after navigation / animation — no stale `WebElement` caching across screens
 - Prefer left-biased taps when a known overlay (e.g. debug FAB) covers CTAs — document quirks in the flow doc
 
+### Flakiness & reruns
+
+`pytest-rerunfailures` may only mask **confirmed environment-level**
+flakiness — run `mobile-env-doctor` first; if it reports Healthy, a rerun
+hides a real bug instead of working around a real environment problem.
+
+- A rerun is legitimate only after `mobile-env-doctor` has diagnosed the
+  specific transient cause (host resource pressure, a known dependency
+  conflict) — never applied by default "just in case"
+- A test that needs a rerun on more than one run in a row is not flaky —
+  it has a real, reproducible bug. Route it to `mobile-test-automation`
+  instead of increasing `--reruns`
+- Never silently increase the rerun count to make a red build green —
+  that's the same failure mode as ignoring `mobile-env-doctor`'s Broken
+  result and hoping the next run gets lucky
+
 ### Assertions
 
 - Assertions belong in **tests** (via `assert_helper`) or thin step wrappers — not in page objects
@@ -274,6 +300,11 @@ Every UI test:
 - Lint: `invoke lint` / `invoke test` auto-fix (ruff + black); do not leave formatting for humans
 
 ### Test data & credentials
+
+This section covers **login credentials** only. For a feature's other
+backend data needs — a group, record, or account the flow interacts with —
+see `mobile-test-data`; don't let a test invent its own ad hoc fixture
+strategy just because it needs data unrelated to login.
 
 An app may support **more than one** login method — mobile number + OTP,
 email + password, Google/Gmail sign-in, or other SSO. `get-mobile-auth` sets
