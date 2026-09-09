@@ -1,3 +1,0 @@
-# Per-environment overrides applied when APP_ENV=uat. Copy to uat.properties.
-api.base.url=https://api.uat.cofee.life
-no.reset=false

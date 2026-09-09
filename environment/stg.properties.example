@@ -1,3 +1,0 @@
-# Per-environment overrides applied when APP_ENV=stg. Copy to stg.properties.
-api.base.url=https://api.stg.cofee.life
-no.reset=false
