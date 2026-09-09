@@ -1,0 +1,15 @@
+# Prefer `invoke install` (pip install -e .) — this file mirrors pyproject.toml
+# for environments that need a plain pip-installable requirements list.
+Appium-Python-Client>=4.1.0
+selenium>=4.20.0
+pytest>=8.0.0
+pytest-xdist>=3.5.0
+allure-pytest>=2.13.5
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.1
+invoke>=2.2.0
+ruff>=0.4.0
+black>=24.4.0
+pre-commit>=3.7.0
+androguard>=4.1.0

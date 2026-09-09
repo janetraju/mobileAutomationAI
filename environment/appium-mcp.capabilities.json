@@ -1,0 +1,12 @@
+{
+  "_comment": "Keep every value here aligned with .env — this is what the appium-mcp server uses for live device sessions during locator discovery (mobile-test-automation).",
+  "platformName": "Android",
+  "appium:automationName": "UiAutomator2",
+  "appium:deviceName": "emulator-5554",
+  "appium:platformVersion": "14",
+  "appium:appPackage": "cofee.life.app.dev",
+  "appium:appActivity": "cofee.life.app.MainActivity",
+  "appium:noReset": true,
+  "appium:fullReset": false,
+  "appium:newCommandTimeout": 120
+}

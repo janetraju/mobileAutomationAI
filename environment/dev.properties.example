@@ -1,0 +1,5 @@
+# Per-environment overrides applied when APP_ENV=dev. Copy to dev.properties
+# and fill in — values here take precedence over .env for env-specific,
+# non-secret settings (secrets still belong only in .env.dev).
+api.base.url=https://api.dev.cofee.life
+no.reset=true

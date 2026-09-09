@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "appium-mcp": {
+      "command": "npx",
+      "args": ["-y", "appium-mcp@latest"],
+      "env": {
+        "APPIUM_MCP_CAPABILITIES_FILE": "environment/appium-mcp.capabilities.json"
+      }
+    }
+  }
+}
