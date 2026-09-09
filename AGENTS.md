@@ -29,19 +29,22 @@ already documented).
 
 | Step | Skill | What you do | What you get |
 |------|-------|--------------|----------------|
-| 1 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
-| 2 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
-| 3 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
-| 4 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
-| 5 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
-| 6 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 7 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
-| 8 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 9 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
-| 10 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 1 | `mobile-env-doctor` | Nothing — run it and read the result | Confirmation the host/device/Appium stack can actually run automation right now |
+| 2 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
+| 3 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
+| 4 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
+| 5 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
+| 6 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
+| 7 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
+| 8 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 9 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 10 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
+| 11 | `teardown` | Nothing | Device/session reset, ready for the next run |
 
-Steps 1–3 happen once per app (or once per feature, for context/auth
-changes). Steps 4–10 repeat for every new feature or test run.
+Steps 1–4 happen once per app (or once per feature, for context/auth
+changes) — though re-run `mobile-env-doctor` (step 1) any time a run feels
+flaky for no code reason, not just once at the start. Steps 5–11 repeat for
+every new feature or test run.
 
 You never need to open a code editor, write a locator, or touch Python to
 complete this pipeline — that's what `mobile-test-automation` is for.
@@ -72,6 +75,9 @@ Each skill describes **only its own workflow**. Shared behavior lives in the
 ### Pipeline
 
 ```text
+# Any time — before a big run, or the moment something feels flaky
+mobile-env-doctor
+
 # New app (once)
 create-mobile-framework-structure
 
@@ -95,6 +101,7 @@ pr-review-changes
 
 | Skill | Role | Output / handoff |
 |-------|------|-------------------|
+| `mobile-env-doctor` | Diagnoses whether the host, device/simulator, and Appium stack are actually fit to run automation right now — resource pressure, a real input/render round-trip (not just "device is online"), driver/dependency version conflicts, platform-host readiness | Healthy / Degraded / Broken status per check, with a specific next action |
 | `create-mobile-framework-structure` | Bootstraps a new app: APK/IPA analysis, `APP_REGISTRY`, `.env`, four-layer folder skeleton | Registered app + folder skeleton + `docs/<app_slug>-flow.md` stub |
 | `get-mobile-context` | Feature intake from PRD, Figma, Jira, product source, or a walkthrough | `docs/context/<app_slug>-<feature>-context.md` |
 | `get-mobile-auth` | Chooses & documents the OTP/credential strategy for the app; wires `.env` | `.env` vars + flow-doc *Known blockers / Test data* section |
@@ -116,6 +123,16 @@ pr-review-changes
 - Config: `python-dotenv` + Pydantic (`src/core/settings.py`)
 - Task runner: `invoke` (`tasks.py`)
 - App type is per-project: native / Flutter / React Native / hybrid — set via `APP_TYPE`
+
+**Platform coverage status:** the Android path (UiAutomator2, `aapt`,
+emulator/device workflow) has been exercised end-to-end against a real app
+and is proven. The iOS path (XCUITest, IPA/`Info.plist` analysis, simulator
+workflow) is implemented per Appium/Apple tooling conventions throughout
+these skills but has **not** been run end-to-end on a real macOS host —
+treat it as a well-reasoned starting point, not a verified capability, and
+run `mobile-env-doctor` Step 4 before assuming an iOS bootstrap will just
+work. iOS requires an actual macOS host with Xcode's command-line tools;
+there is no simulator fallback on Linux/Windows.
 
 ## Quick start
 
@@ -142,7 +159,8 @@ unless you're setting up a fresh machine.
 | `invoke install` | Install Python deps (`pip install -e .`) |
 | `invoke install-precommit` | Install git pre-commit hooks |
 | `invoke emulator:start` | Start Android emulator + wait for device |
-| `invoke app:analyze` | Extract package/activity/type from APK |
+| `invoke app:analyze --apk=...` | Extract package/activity/type from an APK |
+| `invoke app:analyze --ipa=...` | Extract bundle ID/executable from an IPA *(not yet proven against a real IPA)* |
 | `invoke app:install` | Install APK on connected device |
 | `invoke ui:dump --screen=<name>` | Save UI tree to `target/ui-dumps/<name>.xml` |
 | `invoke appium:start` | Start Appium 2.x server |

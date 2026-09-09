@@ -55,6 +55,15 @@ provider's login screen. Only fall back to driving that UI, marked
 `@pytest.mark.manual_otp`-style manual/skip-in-CI, when no pre-authorized
 option is possible.
 
+**iOS note (not yet exercised on a real app — apply with extra care):**
+session-persistence bypass works differently than Android's `NO_RESET` —
+iOS app data/Keychain persistence across launches depends on whether the
+app was uninstalled, not an Appium capability equivalent to `NO_RESET`.
+Biometric prompts (Face ID/Touch ID) appear as a system dialog that must
+be handled explicitly (Appium's `mobile: sendBiometricMatch` on a
+simulator) rather than skipped implicitly the way Android's permission
+auto-grant works. Confirm both live before trusting this strategy on iOS.
+
 ## Output
 
 - One strategy chosen and recorded **per supported method** (see table above)
