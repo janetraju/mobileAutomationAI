@@ -90,7 +90,8 @@ vm_stat
   swap idle pages back in. `MemAvailable` (Linux) / page-out rate (macOS)
   is the signal that actually tracks current pressure; a project's
   `tests/conftest.py` pre-flight check (see `create-mobile-framework-structure`)
-  should gate on the same thing.
+  should gate on the same thing, configurable via a `MIN_AVAILABLE_MEMORY_MB`
+  `.env` var (default `2048`) rather than a number hardcoded into the check.
 - Also glance at load average vs. core count (`uptime`, `nproc`). A
   sustained emulator process pinned at 150%+ CPU on an otherwise-idle
   machine is a *different* problem than memory (see Step 3) — don't

@@ -38,18 +38,20 @@ already documented).
 | 6 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
 | 7 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
 | 8 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 9 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
-| 10 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 11 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
-| 12 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 9 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 10 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 11 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 12 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
 | — | `mobile-ci-pipeline` | Nothing — run once per app, whenever local execution stops being enough | A CI workflow running this suite instead of a shared dev machine |
 
 Steps 1–5 happen once per app (or once per feature, for context/auth/data
 changes) — though re-run `mobile-env-doctor` (step 1) any time a run feels
-flaky for no code reason, not just once at the start. Steps 6–12 repeat for
-every new feature or test run. `mobile-ci-pipeline` is a one-time setup
-step, run whenever it makes sense for the project rather than at a fixed
-point in the sequence.
+flaky for no code reason, not just once at the start. Steps 6–9 repeat for
+every test run (design → automate → report → reset the device right away,
+not after unrelated code-review work). Steps 10–12 happen once per PR,
+whenever the accumulated changes are ready to ship. `mobile-ci-pipeline` is
+a one-time setup step, run whenever it makes sense for the project rather
+than at a fixed point in the sequence.
 
 You never need to open a code editor, write a locator, or touch Python to
 complete this pipeline — that's what `mobile-test-automation` is for.
@@ -126,11 +128,11 @@ mobile-common-scenarios
 | `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
 | `mobile-common-scenarios` | Reference patterns for system dialogs, deep links, push notifications, and background/foreground transitions — things outside the app's own screens | Not a workflow — consulted by `mobile-test-automation`, no independent output |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
+| `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
 | `mobile-ci-pipeline` | Packages the suite for CI (hardware-accelerated emulator/simulator, `mobile-env-doctor` checks, Allure artifact upload) instead of a shared dev machine | `.github/workflows/mobile-tests.yml` (or equivalent) |
 | `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
 | `add-pr-description` | Drafts a reviewer-friendly PR description from the actual commits/diff, then opens/updates the PR after approval | PR created or updated via `gh pr create` / `gh pr edit` |
-| `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 
 ---
 
@@ -354,7 +356,7 @@ inspected on device.
 `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
 `API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`, `DEFAULT_USERNAME`,
 `DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`,
-`EXPLICIT_WAIT_TIMEOUT`
+`EXPLICIT_WAIT_TIMEOUT`, `MIN_AVAILABLE_MEMORY_MB`
 
 All of the above are set for you by `create-mobile-framework-structure` and
 `get-mobile-auth` — this list is a reference, not a manual setup checklist.

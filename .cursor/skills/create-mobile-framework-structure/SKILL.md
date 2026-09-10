@@ -143,7 +143,8 @@ flows, known blockers, test data) and mark its contents **Unconfirmed** until
 ## Step 6 — Scaffold the Host Resource Pre-Flight Check
 
 Add a `pytest_sessionstart` hook to `tests/conftest.py` that fails a run
-immediately with a clear message if available memory is too low, per
+immediately with a clear message if available memory is below
+`MIN_AVAILABLE_MEMORY_MB` (a new `.env` var, default `2048`), per
 `mobile-env-doctor` Step 1 — gate on available memory, not swap-used
 percentage. This turns a session of confusing intermittent failures into
 one fast, actionable exit, for every app this skill bootstraps from here
