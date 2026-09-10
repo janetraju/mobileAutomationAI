@@ -30,6 +30,7 @@ already documented).
 | Step | Skill | What you do | What you get |
 |------|-------|--------------|----------------|
 | 1 | `mobile-env-doctor` | Nothing — run it and read the result | Confirmation the host/device/Appium stack can actually run automation right now |
+| — | `mobile-build-fetch` | Say where builds come from (CI, Play/Firebase/TestFlight, or local) if no APK/IPA exists yet | The build under test saved to `builds/`, named with its version |
 | 2 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
 | 3 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
 | 4 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
@@ -82,6 +83,9 @@ Each skill describes **only its own workflow**. Shared behavior lives in the
 # Any time — before a big run, or the moment something feels flaky
 mobile-env-doctor
 
+# Before create-mobile-framework-structure, if no build exists yet
+mobile-build-fetch
+
 # New app (once)
 create-mobile-framework-structure
 
@@ -103,6 +107,9 @@ mobile-ci-pipeline
 # Before merging
 pr-review-changes
   → add-pr-description
+
+# Reference — mobile-test-automation consults this, not a pipeline step
+mobile-common-scenarios
 ```
 
 ### Skill roles
@@ -110,12 +117,14 @@ pr-review-changes
 | Skill | Role | Output / handoff |
 |-------|------|-------------------|
 | `mobile-env-doctor` | Diagnoses whether the host, device/simulator, and Appium stack are actually fit to run automation right now — resource pressure, a real input/render round-trip (not just "device is online"), driver/dependency version conflicts, platform-host readiness | Healthy / Degraded / Broken status per check, with a specific next action |
+| `mobile-build-fetch` | Gets the APK/IPA from wherever the team actually publishes builds (CI artifact, Play/Firebase/TestFlight, or source) instead of assuming one exists locally | Versioned build under `builds/`, with a record of its source |
 | `create-mobile-framework-structure` | Bootstraps a new app: APK/IPA analysis, `APP_REGISTRY`, `.env`, four-layer folder skeleton | Registered app + folder skeleton + `docs/<app_slug>-flow.md` stub |
 | `get-mobile-context` | Feature intake from PRD, Figma, Jira, product source, or a walkthrough | `docs/context/<app_slug>-<feature>-context.md` |
 | `get-mobile-auth` | Chooses & documents the OTP/credential strategy for the app; wires `.env` | `.env` vars + flow-doc *Known blockers / Test data* section |
 | `mobile-test-data` | Decides how a feature's backend test data is created and cleaned up — isolated vs. shared fixtures, seeding, growth ceiling or reset | Documented **Test Data** section in `docs/<app_slug>-flow.md`, optional seed scripts under `data/<app_slug>/` |
 | `mobile-test-design` | Generates P0/P1/P2 test cases for approval | `docs/context/<app_slug>-<feature>-testcases.md` |
 | `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
+| `mobile-common-scenarios` | Reference patterns for system dialogs, deep links, push notifications, and background/foreground transitions — things outside the app's own screens | Not a workflow — consulted by `mobile-test-automation`, no independent output |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
 | `mobile-ci-pipeline` | Packages the suite for CI (hardware-accelerated emulator/simulator, `mobile-env-doctor` checks, Allure artifact upload) instead of a shared dev machine | `.github/workflows/mobile-tests.yml` (or equivalent) |

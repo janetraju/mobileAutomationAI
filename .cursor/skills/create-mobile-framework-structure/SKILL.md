@@ -86,11 +86,13 @@ already configured, stop and hand off to `get-mobile-context`.
 
 ## Step 2 — Obtain the Build Artifact
 
-Get the APK (Android) or IPA (iOS) for the app. Ask the user for a path or
-upload if not already available under `builds/`. For iOS, confirm first
-(via `mobile-env-doctor` Step 4) that the current host is actually macOS
-with Xcode's command-line tools — there is no way to inspect or run an IPA
-otherwise.
+If a path is already provided or a file already sits under `builds/`, use
+it. Otherwise, hand off to `mobile-build-fetch` rather than just asking
+"upload the APK/IPA" — most teams don't have a build sitting locally by
+default; it comes from CI, an internal distribution service, or a source
+build. For iOS, confirm first (via `mobile-env-doctor` Step 4) that the
+current host is actually macOS with Xcode's command-line tools — there is
+no way to inspect or run an IPA otherwise.
 
 ## Step 3 — Analyze the Artifact
 

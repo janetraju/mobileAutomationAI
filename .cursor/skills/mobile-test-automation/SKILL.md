@@ -350,3 +350,7 @@ mobile-test-report → teardown
 ```
 
 Runs any time before merging: `mobile-coverage-audit`. Repo contract: `AGENTS.md`.
+
+For a system dialog, deep link, push notification, or background/foreground
+transition — anything outside the app's own screens — check
+`mobile-common-scenarios` for the pattern before improvising one.
