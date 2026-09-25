@@ -1,24 +1,25 @@
 ---
 name: mobile-test-automation
 description: >-
-  Implements an approved test scenario end-to-end across the four-layer POM
-  (Page Objects, Actions, Steps, Data Providers, Tests) and runs it, once
-  discover-mobile-locators has confirmed locators live on a running app. Also
-  the skill for editing a single layer file or fixing a flaky test caused by
-  a wait or layer/import issue. Use when automating a feature or flow with
-  confirmed locators, or fixing a layer issue.
+  Confirms locators live on a running app via ui:dump and Appium MCP, then
+  implements the approved test scenario end-to-end across the four-layer POM
+  (Page Objects, Actions, Steps, Data Providers, Tests) and runs it. Also the
+  skill for editing a single layer file, refreshing a stale locator, or
+  fixing a flaky test. Owns locator priority, PO naming, and dump paths per
+  AGENTS.md. Use when automating a feature or flow, starting a new E2E
+  scenario with an approved test case, or fixing a locator/layer issue.
 ---
 
 # Mobile Test Automation
 
-Implement an approved test scenario end-to-end across the four-layer POM,
-once locators are confirmed live via `discover-mobile-locators`, and run it.
+Confirm every locator live on a running application, then implement an
+approved test scenario end-to-end across the four-layer POM, and run it.
 
-Locator **priority, naming, dumps, and the live UI-dump/MCP workflow** are
-owned by `discover-mobile-locators` — this skill consumes its confirmed
-handoff, it does not rediscover locators itself. Everything else (layer
-boundaries, waits, assertions, markers, credential rules) is defined in
-`AGENTS.md` — this skill implements that contract, it does not redefine it.
+AGENTS.md delegates locator **priority, naming, dumps, and the live
+UI-dump/MCP workflow** to this skill — that detail is owned here, not
+restated in AGENTS.md. Everything else (layer boundaries, waits, assertions,
+markers, credential rules) is defined in `AGENTS.md` — this skill implements
+that contract, it does not redefine it.
 
 ## When to Use
 
@@ -27,8 +28,8 @@ Use this skill when:
 - Automating a feature or flow with an approved test case
 - Creating a new `*_po.py` file or starting a new E2E scenario
 - Editing a single layer file (Page Object, Actions, Steps, Data Provider, Test)
-- A layer file needs updating once `discover-mobile-locators` has refreshed a stale locator
-- Fixing a flaky test caused by a wait or layer/import violation
+- UI changes have invalidated existing locators — refreshing a stale dump
+- Fixing a flaky test caused by a locator, wait, or layer/import violation
 
 ## Prerequisites
 
@@ -41,10 +42,9 @@ Before starting, confirm:
 - Approved `docs/context/<app_slug>-<feature>-testcases.md` from `mobile-test-design`
 - `docs/<app_slug>-flow.md`
 - `.env` (`APP_SLUG`, `PLATFORM`)
-- Locators for this scenario's screens confirmed live via `discover-mobile-locators`
 
 Never author Page Objects from product source, APK analysis, or Figma alone —
-every locator must come from a `discover-mobile-locators` handoff (Step 3).
+every locator is confirmed live in Step 3.
 
 Review existing automation before creating new files:
 
@@ -59,6 +59,51 @@ target/ui-dumps/   # local dumps from invoke ui:dump
 ```
 
 Reuse existing implementation whenever possible.
+
+---
+
+## Locator strategy (source of truth)
+
+### Priority (highest first)
+
+1. `AppiumBy.ACCESSIBILITY_ID` / content-desc
+2. Android `ANDROID_UIAUTOMATOR` / resource-id
+3. iOS `IOS_PREDICATE` / `IOS_CLASS_CHAIN`
+4. Text / label
+5. XPath — last resort; justify in a comment
+
+### Naming (PO fields)
+
+| Prefix | Kind | Example |
+|--------|------|---------|
+| `btn_` | Button / CTA | `btn_continue` |
+| `input_` | Text field | `input_mobile` |
+| `txt_` | Static label | `txt_title` |
+| `msg_` | Error / toast | `msg_whitelist_error` |
+| `chk_` | Checkbox / switch | `chk_terms` |
+| `ddl_` | Dropdown | `ddl_org` |
+| `lnk_` | Link | `lnk_view_payments` |
+| `icn_` | Icon-only | `icn_kebab_menu` |
+| `tab_` | Tab | `tab_groups` |
+| `card_` | Card / list row | `card_member` |
+
+Private attrs: `self._<prefix><name>_<strategy>` (`_acc`, `_uia`, `_ios`, `_text`, `_xpath`).
+Public API: `find_<prefix><name>()` → element; `loc_<prefix><name>()` → `(by, value)` for waits.
+Do **not** put strategy suffixes on `find_*` / `loc_*`.
+
+### Dumps
+
+`target/ui-dumps/<screen>.xml` — **local only** (under `target/`); do not
+commit. iOS: `target/ui-dumps/<screen>_ios.xml`.
+
+### Preference by app type
+
+| APP_TYPE | Preferred locator |
+|----------|-------------------|
+| `flutter` | `content-desc` / Semantics |
+| `rn` | `testID` / `accessibilityLabel` |
+| `hybrid` | Native hierarchy (WebView only when required) |
+| `native` | `resource-id` |
 
 ---
 
@@ -99,22 +144,43 @@ Review the approved test case from `mobile-test-design` and identify:
 
 ### Step 3 — Confirm Locators Live on Device
 
-Mandatory for every new scenario — do not begin implementation without it.
+Every new scenario must be validated on a running application. This step is
+mandatory — do not begin implementation without it.
 
-Run **`discover-mobile-locators`** for the screens this scenario touches. It
-owns the UI-dump/Appium MCP walkthrough, the locator priority order, and PO
-naming — see that skill for the full workflow; it is not restated here.
+1. **Capture static UI dumps**
 
-Take from its handoff into Step 4:
+   ```bash
+   adb shell am start -n <APP_PACKAGE>/<APP_ACTIVITY>
+   invoke ui:dump --screen=<screen_name>   # → target/ui-dumps/<screen_name>.xml
+   ```
 
-- Screens visited, in order
-- Confirmed UI text
-- Verified locator strategy per screen
-- Navigation flow, quirks, or overlays
-- Differences from the documented flow
+   Repeat per screen.
 
-Do not begin implementation until `discover-mobile-locators` has handed off
-confirmed locators.
+2. **Walk the flow with Appium MCP**
+
+   - `select_device` → `appium_session_management` (`action=create`)
+   - Navigate with `appium_gesture` / `appium_set_value` / `appium_find_element`
+   - Per screen: screenshot → page source → save XML → `generate_locators`
+   - Confirm every generated locator against page source and visible UI
+
+   | Scenario | Action |
+   |----------|--------|
+   | Fresh login | Clear app data and relaunch |
+   | Logged-in session | Reuse the existing session |
+   | Downstream flow | Complete login before continuing |
+
+   Screenshots when `NO_UI=true`: `target/mcp-screenshots/`. Re-dump after
+   animations, keyboard, or navigation.
+
+3. **Capture, for handoff into Step 4**:
+
+   - Screens visited, in order
+   - Confirmed UI text
+   - Verified locator strategy per screen (per priority order above)
+   - Navigation flow, quirks, or overlays
+   - Differences from the documented flow
+
+Do not begin implementation until the live walkthrough is complete.
 
 ---
 
@@ -190,7 +256,7 @@ than introducing additional waits.
 | Issue | Recommended Action |
 |--------|--------------------|
 | Stale element | Re-query the element after navigation |
-| Element not found | Re-run `discover-mobile-locators` for that screen — do not guess a fix here |
+| Element not found | Re-capture UI dump and verify locator priority |
 | Loading spinner | Wait in the Actions layer |
 | Keyboard overlap | Hide the keyboard before continuing |
 | WebView | Switch context appropriately |
@@ -243,16 +309,16 @@ If implementation uncovers reusable framework or process improvements:
 
 ## Output
 
-Depending on the scenario: PO / actions / steps / dataprovider / tests built
-on locators `discover-mobile-locators` confirmed; flow doc update per Step 7;
-skill or quirk notes per Step 8.
+Depending on the scenario: locator-confirmed PO / actions / steps /
+dataprovider / tests; flow doc update per Step 7; skill or quirk notes per
+Step 8.
 
 ---
 
 ## Rules
 
-- Never author a locator here — every one comes from a `discover-mobile-locators` handoff.
-- Never automate a new scenario before `discover-mobile-locators` has completed its live walkthrough.
+- Never invent locators from APK / product source / Figma alone.
+- Never automate a new scenario without a live device walkthrough.
 - Never automate downstream flows before prerequisite flows pass.
 - Never commit generated UI-dump XML files.
 - Reuse existing framework components whenever possible.
@@ -278,11 +344,13 @@ Application-specific issues belong in `docs/<app_slug>-flow.md`, not here.
 ```text
 create-mobile-framework-structure → get-mobile-context → get-mobile-auth → mobile-test-design
       ↓
-discover-mobile-locators
-      ↓
 mobile-test-automation
       ↓
 mobile-test-report → teardown
 ```
 
 Runs any time before merging: `mobile-coverage-audit`. Repo contract: `AGENTS.md`.
+
+For a system dialog, deep link, push notification, or background/foreground
+transition — anything outside the app's own screens — check
+`mobile-common-scenarios` for the pattern before improvising one.

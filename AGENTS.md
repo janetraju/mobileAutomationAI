@@ -29,24 +29,32 @@ already documented).
 
 | Step | Skill | What you do | What you get |
 |------|-------|--------------|----------------|
-| 1 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
-| 2 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
-| 3 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
-| 4 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
-| 5 | `discover-mobile-locators` | Confirm the flow on a live device when asked | Confirmed locators, ready to implement against |
-| 6 | `mobile-test-automation` | Nothing further — implements against the confirmed locators | Working, runnable automation — written for you |
-| 7 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
-| 8 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
-| 9 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
-| 10 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
-| 11 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 1 | `mobile-env-doctor` | Nothing — run it and read the result | Confirmation the host/device/Appium stack can actually run automation right now |
+| — | `mobile-build-fetch` | Say where builds come from (CI, Play/Firebase/TestFlight, or local) if no APK/IPA exists yet | The build under test saved to `builds/`, named with its version |
+| 2 | `create-mobile-framework-structure` | Provide the APK/IPA once per new app | App registered + folder skeleton — **one-time per app** |
+| 3 | `get-mobile-context` | Answer questions / share a PRD, Figma, or walkthrough for the feature | A written feature context doc |
+| 4 | `get-mobile-auth` | Pick how login/OTP should work in tests (fixed code, manual, or bypass) | Credentials wired up, nothing hardcoded |
+| 5 | `mobile-test-data` | Decide where a feature's test data lives (once, if it needs backend records beyond login) | A documented data strategy — no silent accumulation |
+| 6 | `mobile-test-design` | Review and approve the generated test cases (plain language, P0/P1/P2) | An approved test case list |
+| 7 | `mobile-test-automation` | Confirm the flow on a live device when asked | Working, runnable automation — written for you |
+| 8 | `mobile-test-report` | Nothing — just open the report | Pass/fail results with screenshots and logs |
+| 9 | `teardown` | Nothing | Device/session reset, ready for the next run |
+| 10 | `mobile-coverage-audit` | Nothing — run any time | A coverage-gap report (missing categories, business rules, flow-index drift) |
+| 11 | `pr-review-changes` | Nothing — run before merging | A code-compliance review against the Repo contract (blockers / should-fix / nits) |
+| 12 | `add-pr-description` | Approve the drafted PR description before it's opened/updated | A PR opened or updated via `gh pr create` / `gh pr edit` |
+| — | `mobile-ci-pipeline` | Nothing — run once per app, whenever local execution stops being enough | A CI workflow running this suite instead of a shared dev machine |
 
-Steps 1–3 happen once per app (or once per feature, for context/auth
-changes). Steps 4–11 repeat for every new feature or test run.
+Steps 1–5 happen once per app (or once per feature, for context/auth/data
+changes) — though re-run `mobile-env-doctor` (step 1) any time a run feels
+flaky for no code reason, not just once at the start. Steps 6–9 repeat for
+every test run (design → automate → report → reset the device right away,
+not after unrelated code-review work). Steps 10–12 happen once per PR,
+whenever the accumulated changes are ready to ship. `mobile-ci-pipeline` is
+a one-time setup step, run whenever it makes sense for the project rather
+than at a fixed point in the sequence.
 
 You never need to open a code editor, write a locator, or touch Python to
-complete this pipeline — that's what `discover-mobile-locators` and
-`mobile-test-automation` are for.
+complete this pipeline — that's what `mobile-test-automation` is for.
 
 ---
 
@@ -55,8 +63,7 @@ complete this pipeline — that's what `discover-mobile-locators` and
 | Document | Owns |
 |----------|------|
 | **`AGENTS.md`** (this file) | Always-on **repo contract** — architecture, layers, waits, assertions, stability, markers; locator *policy* (never invent; confirm live) |
-| **`discover-mobile-locators`** | Locator **priority, naming, dumps**, and the live UI-dump/MCP workflow |
-| **`mobile-test-automation`** | Layered code generation (Page Objects → Actions → Steps → Data Provider → Tests) from confirmed locators |
+| **`mobile-test-automation`** | Locator **priority, naming, dumps**, live UI-dump/MCP workflow, and layered code generation |
 | **Other `.cursor/skills/*/SKILL.md`** | Task workflows only — do not restate repo contract |
 
 Skills must **not** restate layer rules, wait policy, or markers — they
@@ -75,14 +82,20 @@ Each skill describes **only its own workflow**. Shared behavior lives in the
 ### Pipeline
 
 ```text
+# Any time — before a big run, or the moment something feels flaky
+mobile-env-doctor
+
+# Before create-mobile-framework-structure, if no build exists yet
+mobile-build-fetch
+
 # New app (once)
 create-mobile-framework-structure
 
 # Per feature
   → get-mobile-context
   → get-mobile-auth        (only if credentials/OTP strategy isn't set yet)
+  → mobile-test-data       (only if the feature needs backend data beyond login)
   → mobile-test-design
-  → discover-mobile-locators
   → mobile-test-automation
   → mobile-test-report
   → teardown
@@ -90,26 +103,36 @@ create-mobile-framework-structure
 # Any time (standalone coverage snapshot — does not gate merging)
 mobile-coverage-audit
 
+# Once per app, whenever local execution stops being enough
+mobile-ci-pipeline
+
 # Before merging
 pr-review-changes
   → add-pr-description
+
+# Reference — mobile-test-automation consults this, not a pipeline step
+mobile-common-scenarios
 ```
 
 ### Skill roles
 
 | Skill | Role | Output / handoff |
 |-------|------|-------------------|
+| `mobile-env-doctor` | Diagnoses whether the host, device/simulator, and Appium stack are actually fit to run automation right now — resource pressure, a real input/render round-trip (not just "device is online"), driver/dependency version conflicts, platform-host readiness | Healthy / Degraded / Broken status per check, with a specific next action |
+| `mobile-build-fetch` | Gets the APK/IPA from wherever the team actually publishes builds (CI artifact, Play/Firebase/TestFlight, or source) instead of assuming one exists locally | Versioned build under `builds/`, with a record of its source |
 | `create-mobile-framework-structure` | Bootstraps a new app: APK/IPA analysis, `APP_REGISTRY`, `.env`, four-layer folder skeleton | Registered app + folder skeleton + `docs/<app_slug>-flow.md` stub |
 | `get-mobile-context` | Feature intake from PRD, Figma, Jira, product source, or a walkthrough | `docs/context/<app_slug>-<feature>-context.md` |
 | `get-mobile-auth` | Chooses & documents the OTP/credential strategy for the app; wires `.env` | `.env` vars + flow-doc *Known blockers / Test data* section |
+| `mobile-test-data` | Decides how a feature's backend test data is created and cleaned up — isolated vs. shared fixtures, seeding, growth ceiling or reset | Documented **Test Data** section in `docs/<app_slug>-flow.md`, optional seed scripts under `data/<app_slug>/` |
 | `mobile-test-design` | Generates P0/P1/P2 test cases for approval | `docs/context/<app_slug>-<feature>-testcases.md` |
-| `discover-mobile-locators` | Captures and verifies UI locators live via `ui:dump` + Appium MCP; owns locator priority, PO naming, dump paths | Confirmed locators handed off to `mobile-test-automation` |
-| `mobile-test-automation` | Implements the approved scenario end-to-end across the four-layer POM using confirmed locators; also the skill for editing a single layer file or fixing a flaky test/layer issue | Working E2E automation (layered files) |
+| `mobile-test-automation` | Live UI dump/locator discovery **and** implements the approved scenario end-to-end; also the skill for editing a single layer file or fixing a flaky test/locator | Working E2E automation (layered files) |
+| `mobile-common-scenarios` | Reference patterns for system dialogs, deep links, push notifications, and background/foreground transitions — things outside the app's own screens | Not a workflow — consulted by `mobile-test-automation`, no independent output |
 | `mobile-test-report` | Generates Allure HTML and triages failures (screenshots, page source, logcat) | Allure report + triage notes |
+| `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 | `mobile-coverage-audit` | Read-only report of test-design coverage gaps (missing categories, screens, business rules, flow-index drift) — does not review code against the Repo contract | `docs/context/<app_slug>-coverage-audit-report.md` |
+| `mobile-ci-pipeline` | Packages the suite for CI (hardware-accelerated emulator/simulator, `mobile-env-doctor` checks, Allure artifact upload) instead of a shared dev machine | `.github/workflows/mobile-tests.yml` (or equivalent) |
 | `pr-review-changes` | Reviews automation diffs for Repo-contract compliance (layer boundaries, locator policy, waits, markers, code quality) — does not check test-design coverage | Review notes (blocker / should-fix / nit), reported in conversation |
 | `add-pr-description` | Drafts a reviewer-friendly PR description from the actual commits/diff, then opens/updates the PR after approval | PR created or updated via `gh pr create` / `gh pr edit` |
-| `teardown` | Resets device/session/app state after a run so the next run starts clean | Clean environment for the next automation run |
 
 ---
 
@@ -121,6 +144,16 @@ pr-review-changes
 - Config: `python-dotenv` + Pydantic (`src/core/settings.py`)
 - Task runner: `invoke` (`tasks.py`)
 - App type is per-project: native / Flutter / React Native / hybrid — set via `APP_TYPE`
+
+**Platform coverage status:** the Android path (UiAutomator2, `aapt`,
+emulator/device workflow) has been exercised end-to-end against a real app
+and is proven. The iOS path (XCUITest, IPA/`Info.plist` analysis, simulator
+workflow) is implemented per Appium/Apple tooling conventions throughout
+these skills but has **not** been run end-to-end on a real macOS host —
+treat it as a well-reasoned starting point, not a verified capability, and
+run `mobile-env-doctor` Step 4 before assuming an iOS bootstrap will just
+work. iOS requires an actual macOS host with Xcode's command-line tools;
+there is no simulator fallback on Linux/Windows.
 
 ## Quick start
 
@@ -147,7 +180,8 @@ unless you're setting up a fresh machine.
 | `invoke install` | Install Python deps (`pip install -e .`) |
 | `invoke install-precommit` | Install git pre-commit hooks |
 | `invoke emulator:start` | Start Android emulator + wait for device |
-| `invoke app:analyze` | Extract package/activity/type from APK |
+| `invoke app:analyze --apk=...` | Extract package/activity/type from an APK |
+| `invoke app:analyze --ipa=...` | Extract bundle ID/executable from an IPA *(not yet proven against a real IPA)* |
 | `invoke app:install` | Install APK on connected device |
 | `invoke ui:dump --screen=<name>` | Save UI tree to `target/ui-dumps/<name>.xml` |
 | `invoke appium:start` | Start Appium 2.x server |
@@ -220,7 +254,7 @@ Import direction: **tests → steps → page_actions → page_objects → core**
 only — confirm every selector on a running app before treating a PO as final.
 
 Full priority order, PO naming (`btn_` / `find_*` / `loc_*`), and dump paths
-are handled by **`discover-mobile-locators`**.
+are handled by **`mobile-test-automation`**.
 
 ### Wait & stability
 
@@ -228,6 +262,22 @@ are handled by **`discover-mobile-locators`**.
 - Use `EXPLICIT_WAIT_TIMEOUT` from settings — no magic timeouts
 - Re-query elements after navigation / animation — no stale `WebElement` caching across screens
 - Prefer left-biased taps when a known overlay (e.g. debug FAB) covers CTAs — document quirks in the flow doc
+
+### Flakiness & reruns
+
+`pytest-rerunfailures` may only mask **confirmed environment-level**
+flakiness — run `mobile-env-doctor` first; if it reports Healthy, a rerun
+hides a real bug instead of working around a real environment problem.
+
+- A rerun is legitimate only after `mobile-env-doctor` has diagnosed the
+  specific transient cause (host resource pressure, a known dependency
+  conflict) — never applied by default "just in case"
+- A test that needs a rerun on more than one run in a row is not flaky —
+  it has a real, reproducible bug. Route it to `mobile-test-automation`
+  instead of increasing `--reruns`
+- Never silently increase the rerun count to make a red build green —
+  that's the same failure mode as ignoring `mobile-env-doctor`'s Broken
+  result and hoping the next run gets lucky
 
 ### Assertions
 
@@ -261,6 +311,11 @@ Every UI test:
 - Lint: `invoke lint` / `invoke test` auto-fix (ruff + black); do not leave formatting for humans
 
 ### Test data & credentials
+
+This section covers **login credentials** only. For a feature's other
+backend data needs — a group, record, or account the flow interacts with —
+see `mobile-test-data`; don't let a test invent its own ad hoc fixture
+strategy just because it needs data unrelated to login.
 
 An app may support **more than one** login method — mobile number + OTP,
 email + password, Google/Gmail sign-in, or other SSO. `get-mobile-auth` sets
@@ -301,7 +356,7 @@ inspected on device.
 `APPIUM_PORT`, `DEVICE_NAME`, `APP_PATH`, `APP_PACKAGE`, `APP_ACTIVITY`,
 `API_BASE_URL`, `TEST_MOBILE`, `TEST_OTP`, `DEFAULT_USERNAME`,
 `DEFAULT_PASSWORD`, `FEATURE_ORG_ID`, `FEATURE_ACCOUNT_ID`, `NO_RESET`,
-`EXPLICIT_WAIT_TIMEOUT`
+`EXPLICIT_WAIT_TIMEOUT`, `MIN_AVAILABLE_MEMORY_MB`
 
 All of the above are set for you by `create-mobile-framework-structure` and
 `get-mobile-auth` — this list is a reference, not a manual setup checklist.
@@ -320,7 +375,7 @@ All of the above are set for you by `create-mobile-framework-structure` and
 **Prerequisites:** `ANDROID_HOME`, device/emulator up, `invoke appium:install-drivers`.
 **Enable:** restart the editor / reload MCP → toggle **appium-mcp**.
 
-Walkthrough steps live in **`discover-mobile-locators`**. Screenshots →
+Walkthrough steps live in **`mobile-test-automation`**. Screenshots →
 `target/mcp-screenshots/` when `NO_UI=true`.
 
 ### Figma MCP
